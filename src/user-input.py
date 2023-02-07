@@ -37,7 +37,6 @@ def user_input():
             print("\nOops, something went wrong with your input. Please try again")
             continue
         
-
         if (data_choice == 'a' or data_choice == 'b' or data_choice == 'c'):
             if data_choice not in datapoints:
                 datapoints.append(data_choice)
@@ -48,15 +47,17 @@ def user_input():
             print("\nSomething went wrong, please try retyping your input\n")
             continue
 
-        c = input("\nWould you like to select another datapoint? (y or any other key):")
+        if len(datapoints) != 3:
+            c = input("\nWould you like to select another datapoint? (y or any other key):")
 
-        if c == 'y':
-            continue
-        if c == 'q':
-            return
+            if c == 'y':
+                continue
+            if c == 'q':
+                return
+            else:
+                break
         else:
             break
-
 
     #Browser Choice
     browser = 'a' #Chrome is default, value set at 'a'
@@ -78,7 +79,6 @@ def user_input():
             print("\nOops! Something went wrong with your input. Please try again")
             continue
 
-
         if browser_choice == 'a':
             break
         elif browser_choice == 'b':
@@ -92,7 +92,6 @@ def user_input():
     #Url input
     urls = []
     url_input_type = 'a' #Default is manual entry
-
 
     while True:
 
@@ -112,7 +111,6 @@ def user_input():
         if url_input_type == 'q':
             return
 
-
         if url_input_type == 'a' or url_input_type == 'b':
             break
         else:
@@ -123,6 +121,14 @@ def user_input():
         while True:
             try:
                 user_input = input("Enter the desired URL: ")
+
+                if (user_input == "help") or (user_input == "Help") or (user_input == 'h'):
+                    help()
+                    continue
+
+                if user_input == 'q':
+                    return
+
                 #socket.gethostbyname(user_input)
                 #urllib.request.urlopen(user_input)
                 get = urllib.request.urlopen(str(user_input))
@@ -134,6 +140,10 @@ def user_input():
                     if c == 'y':
                         continue
                     
+                    if (c == "help") or (c == "Help") or (c == 'h'):
+                        help()
+                        continue
+
                     if c == 'q':
                         return
 
@@ -148,24 +158,46 @@ def user_input():
     if url_input_type == 'b':
         while True:
             try:
-                filpath = input("\nPlease enter the filepath of a txt file containing your list of urls.\n")
+                filepath = input("\nPlease enter the filepath of a txt file containing your list of urls:   ")
+            except:
+                print("\nOops! Looks like there was a problem referencing the file. Make sure you entered the path correctly and the file is a txt file.")
+                continue
+                
+            if (filepath == "help") or (filepath == "Help") or (filepath == 'h'):
+                help()
+                continue
 
-                if (filepath == "help") or (filepath == "Help") or (filepath == 'h'):
-                    help()
-                    continue
+            if filepath == 'q':
+                return
 
-                if filepath == 'q':
-                    return
-
+            try:
                 f = open(filepath, "r")
-                count = 0
-                for url in f:
-                    print("[{}]: {}".format(count, url.strip()))
-                    urls.append(url)
             except:
                 print("\nOops! Looks like there was a problem referencing the file. Make sure you entered the path correctly and the file is a txt file.")
                 continue
 
+
+            count = 0
+            malformed = 0
+            for url in f:
+                try:
+                    get = urllib.request.urlopen(str(url.strip()))
+                    if get.getcode() == 200:
+                        print("[{}]: {}".format(count, url.strip()))
+                        urls.append(url.strip())
+                        count += 1
+                except:
+                    print("[X]: {}".format(url.strip()))
+                    malformed += 1
+
+            f.close()
+
+            if malformed > 0:
+                print("\n{} Malformed urls included in your file. Added {} valid urls, continuing...\n".format(malformed, count))
+
+
+            print("Starting tracker analysis...\n")
+            break
 
     print("Datapoints: ", datapoints)
     print("Browser: " + browser)
