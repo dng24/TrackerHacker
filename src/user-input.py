@@ -5,6 +5,7 @@ import urllib.request
 import sys
 import os
 import requests
+import pathlib
 
 def help():
     print("\n\nWelcome to tracker hacker, a convenient tool to show what trackers are spying on you when you visit a webpage. Usage of the tool is easy!\n\nFirst, enter the types of FINISH")
@@ -159,16 +160,18 @@ def user_input():
         while True:
             try:
                 filepath = input("\nPlease enter the filepath of a txt file containing your list of urls:   ")
+                if pathlib.Path(filepath).suffix != '.txt':
+                    raise ValueError
+                
+                if (filepath == "help") or (filepath == "Help") or (filepath == 'h'):
+                    help()
+                    continue
+
+                if filepath == 'q':
+                    return
             except:
                 print("\nOops! Looks like there was a problem referencing the file. Make sure you entered the path correctly and the file is a txt file.")
                 continue
-                
-            if (filepath == "help") or (filepath == "Help") or (filepath == 'h'):
-                help()
-                continue
-
-            if filepath == 'q':
-                return
 
             try:
                 f = open(filepath, "r")
@@ -177,7 +180,7 @@ def user_input():
                 continue
 
 
-            count = 0
+            count = 1
             malformed = 0
             for url in f:
                 try:
