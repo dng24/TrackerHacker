@@ -28,7 +28,7 @@ async def start_proxy(host, port):
     await master.run()
     return master
 
-asyncio.run(start_proxy('127.0.0.1', 8080))
+#asyncio.run(start_proxy('127.0.0.1', 8080))
 
 #addons = [Proxy()]
 
