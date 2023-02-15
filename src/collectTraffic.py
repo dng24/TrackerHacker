@@ -29,7 +29,11 @@ def open_websites(urls, browsers):
                 fp.set_preference("network.proxy.ssl_port", 8080)
                 fp.update_preferences()
 
-                driver = webdriver.Firefox(firefox_profile=fp, service=FirefoxService(GeckoDriverManager().install()))
+                opts = webdriver.FirefoxOptions()
+                opts.set_profile(fp)
+
+                #finish including firefox object
+                driver = webdriver.Firefox(service=FirefoxService(GeckoDriverManager().install()))
 
             asyncio.run(start_proxy('127.0.0.1', 8080))
             sleep(2)
