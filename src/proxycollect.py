@@ -38,10 +38,10 @@ class Proxy:
     def request(self, flow: http.HTTPFlow) -> None:
         self.request_made_since_last_check = True
         fqdn = flow.request.host
-        if fqdn in fqdns:
-            fqdns[fqdn] += 1
+        if fqdn in self.fqdns:
+            self.fqdns[fqdn] += 1
         else:
-            fqdns[fqdn] = 1
+            self.fqdns[fqdn] = 1
 
         print(flow.request.host)
         print("aaa")
