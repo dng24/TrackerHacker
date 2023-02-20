@@ -31,7 +31,10 @@ def open_websites(urls: list, browsers: list, request_timeout: int=5):
                 opts.set_preference("network.proxy.http_port", 8080)
                 opts.set_preference("network.proxy.ssl", "127.0.0.1")
                 opts.set_preference("network.proxy.ssl_port", 8080)
-                driver = webdriver.Firefox(options=opts, service=FirefoxService(GeckoDriverManager().install()))
+                try:
+                    driver = webdriver.Firefox(options=opts, service=FirefoxService(GeckoDriverManager().install()))
+                except selenium.common.exceptions.WebDriverException:
+                    print("ur firefox is broke")
 
             proxy = proxycollect.Proxy(request_timeout)
             print("Starting proxy")
@@ -68,5 +71,5 @@ async def start_proxy(proxy: proxycollect.Proxy, host: str, port: int):
     return master
 
 
-open_websites(["https://duckduckgo.com"], [WebBrowsers.FIREFOX])
+open_websites(["https://cnn.com"], [WebBrowsers.FIREFOX])
 
