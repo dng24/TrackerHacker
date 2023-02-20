@@ -10,11 +10,12 @@ class Proxy:
         self.fqdns = {}
         self.request_made_since_last_check = True
         self.shutdown = False
-        #threading.Thread(target=self._check_timeout, args=(request_timeout,))
+        t = threading.Thread(target=self.check_timeout, args=(request_timeout,))
+        t.start()
         print("init")
 
 
-    def _check_timeout(self, request_timeout: int) -> None:
+    def check_timeout(self, request_timeout: int) -> None:
         while self.request_made_since_last_check:
             self.request_made_since_last_check = False
             time.sleep(request_timeout)
@@ -27,7 +28,7 @@ class Proxy:
         return self.shutdown
 
 
-    def shutdown(self) -> None:
+    def shutdown_proxy(self) -> None:
         ctx.master.shutdown()
 
 
@@ -44,4 +45,3 @@ class Proxy:
             self.fqdns[fqdn] = 1
 
         print(flow.request.host)
-        print("aaa")

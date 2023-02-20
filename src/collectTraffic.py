@@ -33,10 +33,10 @@ def open_websites(urls: list, browsers: list, request_timeout: int=5):
                 opts.set_preference("network.proxy.ssl_port", 8080)
                 driver = webdriver.Firefox(options=opts, service=FirefoxService(GeckoDriverManager().install()))
 
-            #proxy = proxycollect.Proxy(request_timeout)
+            proxy = proxycollect.Proxy(request_timeout)
             print("Starting proxy")
             # launch proxy in background
-            t = threading.Thread(target=start_proxy_launcher, args=(None, '127.0.0.1', 8080))
+            t = threading.Thread(target=start_proxy_launcher, args=(proxy, '127.0.0.1', 8080))
             t.start()
 
             # wait for proxy to boot up
@@ -45,24 +45,27 @@ def open_websites(urls: list, browsers: list, request_timeout: int=5):
             print("launching webpage")
             driver.get(url)
 
-            #while not proxy.should_shutdown():
-            #    time.sleep(request_timeout)
+            while not proxy.should_shutdown():
+                time.sleep(request_timeout)
 
-            #print("closing webpage")
-            #driver.close()
-            #print("shutting down proxy")
-            #proxy.shutdown()
+            print("closing webpage")
+            driver.close()
+            print("shutting down proxy")
+            proxy.shutdown_proxy()
+
+            print("RESULTS:", proxy.get_fqdns())
 
 
 def start_proxy_launcher(proxy: proxycollect.Proxy, host: str, port: int) -> None:
     asyncio.run(start_proxy(proxy, host, port))
 
 
-async def start_proxy(proxy: proxycollect.Proxy, host: str, port: int) -> None:
+async def start_proxy(proxy: proxycollect.Proxy, host: str, port: int):
     opts = main.options.Options(listen_host=host, listen_port=port)
     master = DumpMaster(options=opts, with_termlog=False, with_dumper=False)
-    master.addons.add(proxycollect.Proxy())
+    master.addons.add(proxy)
     await master.run()
+    return master
 
 
 open_websites(["https://duckduckgo.com"], [WebBrowsers.FIREFOX])
