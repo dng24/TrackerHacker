@@ -1,5 +1,5 @@
 import asyncio
-import os
+import selenium
 import threading
 import time
 
@@ -35,6 +35,7 @@ def open_websites(urls: list, browsers: list, request_timeout: int=5):
                     driver = webdriver.Firefox(options=opts, service=FirefoxService(GeckoDriverManager().install()))
                 except selenium.common.exceptions.WebDriverException:
                     print("ur firefox is broke")
+                    continue
 
             proxy = proxycollect.Proxy(request_timeout)
             print("Starting proxy")
