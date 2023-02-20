@@ -1,23 +1,24 @@
+import asyncio
+import os
+import threading
+import time
+
 from enum import Enum
+from mitmproxy.tools import main
+from mitmproxy.tools.dump import DumpMaster
 from selenium import webdriver
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from webdriver_manager.firefox import GeckoDriverManager
 
-import os
-import asyncio
-import threading
-import time
-
-from mitmproxy.tools import main
-from mitmproxy.tools.dump import DumpMaster
-
 import proxycollect
+
 
 class WebBrowsers(Enum):
     CHROME = "chrome"
     FIREFOX = "firefox"
 
-def open_websites(urls, browsers):
+
+def open_websites(urls: list, browsers: list, request_timeout: int=5):
     for url in urls:
         for browser in browsers:
             if browser == WebBrowsers.CHROME:
@@ -32,27 +33,37 @@ def open_websites(urls, browsers):
                 opts.set_preference("network.proxy.ssl_port", 8080)
                 driver = webdriver.Firefox(options=opts, service=FirefoxService(GeckoDriverManager().install()))
 
+            #proxy = proxycollect.Proxy(request_timeout)
+            print("Starting proxy")
             # launch proxy in background
-            t = threading.Thread(target=start_proxy_launcher, args=('127.0.0.1', 8080))
+            t = threading.Thread(target=start_proxy_launcher, args=(None, '127.0.0.1', 8080))
             t.start()
 
             # wait for proxy to boot up
             time.sleep(2)
             # go to URL with selenium
+            print("launching webpage")
             driver.get(url)
 
+            #while not proxy.should_shutdown():
+            #    time.sleep(request_timeout)
 
-def start_proxy_launcher(host, port):
-    asyncio.run(start_proxy(host, port))
+            #print("closing webpage")
+            #driver.close()
+            #print("shutting down proxy")
+            #proxy.shutdown()
 
 
-async def start_proxy(host, port):
+def start_proxy_launcher(proxy: proxycollect.Proxy, host: str, port: int) -> None:
+    asyncio.run(start_proxy(proxy, host, port))
+
+
+async def start_proxy(proxy: proxycollect.Proxy, host: str, port: int) -> None:
     opts = main.options.Options(listen_host=host, listen_port=port)
     master = DumpMaster(options=opts, with_termlog=False, with_dumper=False)
-    master.addons.add(proxycollect.MyProxy())
+    master.addons.add(proxycollect.Proxy())
     await master.run()
-    return master
 
 
-open_websites(["https://cnn.com"], [WebBrowsers.FIREFOX])
+open_websites(["https://duckduckgo.com"], [WebBrowsers.FIREFOX])
 
