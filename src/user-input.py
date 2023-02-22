@@ -141,10 +141,6 @@ def user_input():
                     if c == 'y':
                         continue
                     
-                    if (c == "help") or (c == "Help") or (c == 'h'):
-                        help()
-                        continue
-
                     if c == 'q':
                         return
 
@@ -160,8 +156,6 @@ def user_input():
         while True:
             try:
                 filepath = input("\nPlease enter the filepath of a txt file containing your list of urls:   ")
-                if pathlib.Path(filepath).suffix != '.txt':
-                    raise ValueError
                 
                 if (filepath == "help") or (filepath == "Help") or (filepath == 'h'):
                     help()
@@ -169,6 +163,10 @@ def user_input():
 
                 if filepath == 'q':
                     return
+           
+                if pathlib.Path(filepath).suffix != '.txt':
+                    print("error")
+                    raise ValueError
             except:
                 print("\nOops! Looks like there was a problem referencing the file. Make sure you entered the path correctly and the file is a txt file.")
                 continue
@@ -180,7 +178,7 @@ def user_input():
                 continue
 
 
-            count = 1
+            count = 0
             malformed = 0
             for url in f:
                 try:
@@ -199,13 +197,91 @@ def user_input():
                 print("\n{} Malformed urls included in your file. Added {} valid urls, continuing...\n".format(malformed, count))
 
 
-            print("Starting tracker analysis...\n")
+            break
+
+    #Default list or manual list entry
+    blocklist_urls = []
+    blocklist_url_input_type = 'a' #Default
+
+    while True:
+
+        print("\nPlease select if you want to supply a custom ad/tracker list or if you would like to use the default list.\n")
+        print("a)    Default list\n")
+        print("b)    Custom list\n")
+
+        try:
+            blocklist_url_input_type = input("\nPlease enter what type of url input you will use:  ")
+        except:
+            print("\nOops! There was a problem with your input, please try again.")
+
+        if (blocklist_url_input_type == "help") or (blocklist_url_input_type == "Help") or (blocklist_url_input_type == 'h'):
+            help()
+            continue
+
+        if blocklist_url_input_type == 'q':
+            return
+
+        if blocklist_url_input_type == 'a' or blocklist_url_input_type == 'b':
+            break
+        else:
+            print("\nPlease enter a valid input.")
+
+
+    if blocklist_url_input_type == 'a':
+        try:
+            f= open("default_list.txt", "r")
+            for url in f:
+                blocklist_urls.append(url.strip())
+        except:
+            print("Oops, looks like something is wrong with the default list file. Please make sure it is in the proper directory and the right format. Aborting program.\n")
+            return
+        f.close()
+        
+
+
+    if blocklist_url_input_type == 'b':
+        while True:
+            try:
+                filepath = input("\nPlease enter the filepath of a txt file containing your list of ad/tracker urls:   ")
+
+                if (filepath == "help") or (filepath == "Help") or (filepath == 'h'):
+                    help()
+                    continue
+
+                if filepath == 'q':
+                    return
+
+                if pathlib.Path(filepath).suffix != '.txt':
+                    raise ValueError
+
+            except:
+                print("\nOops! Looks like there was a problem referencing the file. Make sure you entered the path correctly and the file is a txt file.")
+                continue
+
+            try:
+                f = open(filepath, "r")
+            except:
+                print("\nOops! Looks like there was a problem referencing the file. Make sure you entered the path correctly and the file is a txt file.")
+                continue
+
+            for url in f:
+                try:
+                    blocklist_urls.append(url.strip())
+                except:
+                    print("Oops, looks like something is wrong with the default list file, and an error occured when processing it. Please make sure it is in the proper directory and the right format.\n")
+                    continue
+            f.close()
+
             break
 
     print("Datapoints: ", datapoints)
     print("Browser: " + browser)
     print("urls ", urls)
+    print("blocklist urls", blocklist_urls)
 
+    print("Starting analysis")
+
+    return datapoints,browser,urls,blocklist_urls
 
 
 user_input()
