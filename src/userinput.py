@@ -1,5 +1,3 @@
-#!/usr/bin/env python3.11
-
 import socket
 import urllib.request
 import sys
@@ -7,10 +5,12 @@ import os
 import requests
 import pathlib
 
+from browsers import WebBrowsers
+
 def help():
     print("\n\nWelcome to tracker hacker, a convenient tool to show what trackers are spying on you when you visit a webpage. Usage of the tool is easy!\n\nFirst, enter the types of FINISH")
 
-def user_input():
+def get_user_input():
 
     print("Welcome to tracker hacker!\n")
     print("To begin, select your datapoints and url inputs. (Type help for manual, q to quit)\n")
@@ -81,9 +81,10 @@ def user_input():
             continue
 
         if browser_choice == 'a':
+            browser = WebBrowsers.CHROME
             break
         elif browser_choice == 'b':
-            browser = 'b'
+            browser = WebBrowsers.FIREFOX
             break
         else:
             print("\nPlease enter a valid choice for browser")
@@ -275,7 +276,7 @@ def user_input():
             break
 
     print("Datapoints: ", datapoints)
-    print("Browser: " + browser)
+    print("Browser: " + str(browser))
     print("urls ", urls)
     print("blocklist urls", blocklist_urls)
 
@@ -284,8 +285,5 @@ def user_input():
     return datapoints,browser,urls,blocklist_urls
 
 
-user_input()
-
-
-
-
+if __name__ == "__main__":
+    user_input()
