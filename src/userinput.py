@@ -113,7 +113,8 @@ def get_user_input():
                 continue
 
             if data_choice == 'q':
-                return
+                #NOTE: set to verify unittest mock inputs, might want to keep
+                return 0
 
         except:
             print("\nOops, something went wrong with your input. Please try again")
