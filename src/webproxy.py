@@ -9,10 +9,18 @@ class Proxy:
     def __init__(self, request_timeout: int=5) -> None:
         self.fqdns = {}
         self.request_made_since_last_check = True
-        self.shutdown = False
-        t = threading.Thread(target=self.check_timeout, args=(request_timeout,))
-        t.start()
+        self.data_collection_in_progress = False
+        self.request_timeout = request_timeout
         print("init")
+
+
+    def collect_data(self) -> None:
+        self.fqdns = {}
+        self.request_made_since_last_check = True
+        self.data_collection_in_progress = True
+
+        t = threading.Thread(target=self.check_timeout, args=(self.request_timeout,))
+        t.start()
 
 
     def check_timeout(self, request_timeout: int) -> None:
@@ -21,11 +29,11 @@ class Proxy:
             time.sleep(request_timeout)
 
         print("timeout reached")
-        self.shutdown = True
+        self.data_collection_in_progress = False
 
 
-    def should_shutdown(self) -> bool:
-        return self.shutdown
+    def is_data_collection_in_progress(self) -> bool:
+        return self.data_collection_in_progress
 
 
     def shutdown_proxy(self) -> None:
@@ -37,11 +45,12 @@ class Proxy:
 
 
     def request(self, flow: http.HTTPFlow) -> None:
-        self.request_made_since_last_check = True
-        fqdn = flow.request.host
-        if fqdn in self.fqdns:
-            self.fqdns[fqdn] += 1
-        else:
-            self.fqdns[fqdn] = 1
+        if self.data_collection_in_progress:
+            self.request_made_since_last_check = True
+            fqdn = flow.request.host
+            if fqdn in self.fqdns:
+                self.fqdns[fqdn] += 1
+            else:
+                self.fqdns[fqdn] = 1
 
-        print(flow.request.host)
+            print(flow.request.host)

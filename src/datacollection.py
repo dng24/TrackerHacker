@@ -18,6 +18,12 @@ results = {}
 
 
 def collect_fqdns(urls: list, browsers: list, request_timeout: int=5) -> dict:
+    proxy = webproxy.Proxy(request_timeout)
+    print("Starting proxy")
+    # launch proxy in background
+    t = threading.Thread(target=_start_proxy_launcher, args=(proxy, '127.0.0.1', 8080))
+    t.start()
+
     for url in urls:
         results[url] = {}
         for browser in browsers:
@@ -42,28 +48,29 @@ def collect_fqdns(urls: list, browsers: list, request_timeout: int=5) -> dict:
                     print("ur firefox is broke or missing")
                     continue
 
-            proxy = webproxy.Proxy(request_timeout)
-            print("Starting proxy")
-            # launch proxy in background
-            t = threading.Thread(target=_start_proxy_launcher, args=(proxy, '127.0.0.1', 8080))
-            t.start()
-
-            # wait for proxy to boot up
             time.sleep(2)
-            # go to URL with selenium
+            proxy.collect_data()
             print("launching webpage")
-            driver.get(url)
+            try:
+                driver.get(url)
+            except selenium.common.exceptions.WebDriverException:
+                print("Unable to connect to %s" % url)
+                driver.close()
+                continue
 
-            while not proxy.should_shutdown():
-                time.sleep(request_timeout)
+            # wait for the data to be collected
+            while proxy.is_data_collection_in_progress():
+                time.sleep(2)
 
             print("closing webpage")
             driver.close()
-            print("shutting down proxy")
-            proxy.shutdown_proxy()
 
             print("RESULTS:", proxy.get_fqdns())
             results[url][browser] = proxy.get_fqdns()
+
+
+    print("shutting down proxy")
+    proxy.shutdown_proxy()
 
 
 def _start_proxy_launcher(proxy: webproxy.Proxy, host: str, port: int) -> None:
@@ -79,5 +86,5 @@ async def _start_proxy(proxy: webproxy.Proxy, host: str, port: int):
 
 
 if __name__ == "__main__":
-    collect_fqdns(["https://google.com"], [WebBrowsers.FIREFOX])
+    collect_fqdns(["https://cnn.com"], [WebBrowsers.FIREFOX])
 
