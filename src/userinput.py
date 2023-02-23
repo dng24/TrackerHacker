@@ -4,6 +4,7 @@ import sys
 import os
 import requests
 import pathlib
+import validators
 
 from browsers import WebBrowsers
 
@@ -133,9 +134,10 @@ def get_user_input():
 
                 #socket.gethostbyname(user_input)
                 #urllib.request.urlopen(user_input)
-                get = urllib.request.urlopen(str(user_input))
-                print(get.getcode())
-                if get.getcode() == 200:
+                #get = urllib.request.urlopen(str(user_input))
+                #print(get.getcode())
+                #if get.getcode() == 200:
+                if validators.url(str(user_input)):
                     urls.append(user_input)
                     c = input("Valid url entered! Would you like to enter another url (y or any other key)?\n")
 
@@ -144,9 +146,11 @@ def get_user_input():
                     
                     if c == 'q':
                         return
+                else:
+                    print("Malformed URL entered, please type your desired url again")
+                    continue
 
-                    print("Starting tracker analysis...\n")    
-                    break
+                break
             except:
                 print("Malformed URL entered, please type your desired url again\n")
                 continue
@@ -183,11 +187,15 @@ def get_user_input():
             malformed = 0
             for url in f:
                 try:
-                    get = urllib.request.urlopen(str(url.strip()))
-                    if get.getcode() == 200:
+                    #get = urllib.request.urlopen(str(url.strip()))
+                    #if get.getcode() == 200:
+                    if validators.url(str(url.strip())):
                         print("[{}]: {}".format(count, url.strip()))
                         urls.append(url.strip())
                         count += 1
+                    else:
+                        print("[X]: {}".format(url.strip()))
+                        malformed += 1
                 except:
                     print("[X]: {}".format(url.strip()))
                     malformed += 1
