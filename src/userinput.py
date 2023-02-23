@@ -5,11 +5,91 @@ import os
 import requests
 import pathlib
 import validators
+import argparse
 
 from browsers import WebBrowsers
 
 def help():
     print("\n\nWelcome to tracker hacker, a convenient tool to show what trackers are spying on you when you visit a webpage. Usage of the tool is easy!\n\nFirst, enter the types of FINISH")
+
+def get_userinput_args():
+    print("args")
+    
+
+    datapoints = []
+    browsers = []
+    urls = []
+    adlist_urls = []
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument("-d", "--data", nargs='*', help="Data types to output. 1: Whois, 2: IP geolocation, 3: Owner. For multipe choices, enter them space delimited, eg: -d 1 2 for whois and IP geolocation.", type=int)
+    parser.add_argument("-b", "--browser", nargs='*', help="Which browser to use. 1: Chrome, 2: Firefox. For multiple choices, enter them space delimited, eg: 1 2 for Chrome and Firefox", type=int)
+    parser.add_argument("-u", "--urls", help="URLs to analyze. Provide the path of a .txt file with a list of urls, with only a single url per line.")
+    parser.add_argument("-l", "--list", help="List of ads/trackers. Please either enter \'default\' to use the default list of ads/trackers, or provide the path of a .txt file with a list of custom ad/tracker urls, with only a single url per line.")
+    
+    args = parser.parse_args()
+    
+    if args.data:
+        count = 0
+        print("URL Args:", args.data)
+        datapoints = args.data
+        for choice in args.data:
+            if choice == 1 or choice == 2 or choice == 3:
+                continue
+            else:
+                datapoints.remove(choice)
+    else:
+        datapoints = [1,2,3]
+
+    if args.browser:
+        count = 0
+        browsers = args.browser
+        for choice in args.browser:
+            if choice == 1 or choice == 2:
+                continue
+            else:
+                browsers.remove(choice)
+    else:
+        browsers = [1,2]
+
+    
+    if args.urls:
+        
+        if pathlib.Path(args.urls).suffix != '.txt':
+            print("\nOops! Looks like there was a problem loading your urls file. Please make sure that it is a valid path and a correctly formatted .txt file")          
+        else:    
+            count = 0
+            malformed = 0
+            f = open(args.urls, "r")
+            for url in f:
+                try:
+                    if validators.url(url.strip()):
+                        print("[{}]: {}".format(count, url.strip()))
+                        urls.append(url.strip())
+                        count += 1
+                    else:
+                        print("[X]: {}".format(url.strip()))
+                        malformed += 1
+                except:
+                    print("[X]: {}".format(url.strip()))
+                    malformed += 1 
+            f.close()
+
+    if args.list:
+        if pathlib.Path(args.list).suffix != '.txt':
+            print("\nOops! Looks like there was a problem loading your urls file. Please make sure that it is a valid path and a correctly formatted .txt file")
+        else:
+            f = open(args.list, "r")
+            for ad in f:
+                adlist_urls.append(ad.strip())
+            f.close()
+
+    print("Choices", datapoints)
+    print("Browsers", browsers)
+    print("Urls", urls)
+    print("Adlist", adlist_urls)
+
+
 
 def get_user_input():
 
@@ -294,4 +374,7 @@ def get_user_input():
 
 
 if __name__ == "__main__":
-    user_input()
+    if len(sys.argv) > 1:
+        get_userinput_args()
+    else:
+        get_user_input()
