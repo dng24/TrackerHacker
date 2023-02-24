@@ -1,14 +1,20 @@
 import userinput
 import datacollection
+import sys
 
 def main():
     print("init")
     # 1. parse args
-    datapoints, browsers, urls, blocklist_urls = userinput.get_user_input()
+    
+    # Determines what interface to use
+    if len(sys.argv) > 1:
+        datapoints, browsers, urls, blocklist_urls = userinput.get_userinput_args()
+    else:
+        datapoints, browsers, urls, blocklist_urls = userinput.get_user_input()
 
     # 2. open urls with selenium and capture traffic with web proxy
     print(browsers)
-    fqdns = datacollection.collect_fqdns(urls, [browsers])
+    fqdns = datacollection.collect_fqdns(urls, browsers)
 
     # 3. separate ad/tracking domains from other domains
 
