@@ -43,14 +43,16 @@ def get_userinput_args():
 
     if args.browser:
         count = 0
-        browsers = args.browser
+        browsers = []
         for choice in args.browser:
-            if choice == 1 or choice == 2:
-                continue
+            if choice == 1:
+                browsers.append(WebBrowsers.CHROME)
+            elif choice == 2:
+                browsers.append(WebBrowsers.FIREFOX)
             else:
-                browsers.remove(choice)
+                continue
     else:
-        browsers = [1,2]
+        browsers.append(WebBrowsers.FIREFOX)
 
     
     if args.urls:
@@ -84,18 +86,15 @@ def get_userinput_args():
                 adlist_urls.append(ad.strip())
             f.close()
 
-    print("Choices", datapoints)
-    print("Browsers", browsers)
-    print("Urls", urls)
-    print("Adlist", adlist_urls)
+    #print("Choices", datapoints)
+    #print("Browsers", browsers)
+    #print("Urls", urls)
+    #print("Adlist", adlist_urls)
 
 
+    return datapoints, browsers, urls, adlist_urls
 
-def get_user_input():
-
-    print("Welcome to tracker hacker!\n")
-    print("To begin, select your datapoints and url inputs. (Type help for manual, q to quit)\n")
-
+def datapoints():
 
     #Desired data points
     datapoints = []
@@ -114,7 +113,7 @@ def get_user_input():
 
             if data_choice == 'q':
                 #NOTE: set to verify unittest mock inputs, might want to keep
-                return 0
+                return None
 
         except:
             print("\nOops, something went wrong with your input. Please try again")
@@ -136,14 +135,19 @@ def get_user_input():
             if c == 'y':
                 continue
             if c == 'q':
-                return
+                return None
             else:
                 break
         else:
             break
 
+    return datapoints
+
+
+def browser_choice():
+
     #Browser Choice
-    browser = 'a' #Chrome is default, value set at 'a'
+    browser = [] #Chrome is default, value set at 'a'
     while True:
         print("\n Please select the browser for tracker hacker to query\n")
         print("a)    Chrome\n")
@@ -157,22 +161,25 @@ def get_user_input():
                 continue
 
             if browser_choice == 'q':
-                return
+                return None
         except:
             print("\nOops! Something went wrong with your input. Please try again")
             continue
 
         if browser_choice == 'a':
-            browser = WebBrowsers.CHROME
+            browser.append(WebBrowsers.CHROME)
             break
         elif browser_choice == 'b':
-            browser = WebBrowsers.FIREFOX
+            browser.append(WebBrowsers.FIREFOX)
             break
         else:
             print("\nPlease enter a valid choice for browser")
             continue
     
+    return browser
 
+
+def urls():
     #Url input
     urls = []
     url_input_type = 'a' #Default is manual entry
@@ -193,7 +200,7 @@ def get_user_input():
             continue
 
         if url_input_type == 'q':
-            return
+            return None
 
         if url_input_type == 'a' or url_input_type == 'b':
             break
@@ -211,7 +218,7 @@ def get_user_input():
                     continue
 
                 if user_input == 'q':
-                    return
+                    return None
 
                 #socket.gethostbyname(user_input)
                 #urllib.request.urlopen(user_input)
@@ -226,7 +233,7 @@ def get_user_input():
                         continue
                     
                     if c == 'q':
-                        return
+                        return None
                 else:
                     print("Malformed URL entered, please type your desired url again")
                     continue
@@ -248,7 +255,7 @@ def get_user_input():
                     continue
 
                 if filepath == 'q':
-                    return
+                    return None
            
                 if pathlib.Path(filepath).suffix != '.txt':
                     print("error")
@@ -289,6 +296,11 @@ def get_user_input():
 
             break
 
+    return urls
+
+
+def adtrack_list():
+
     #Default list or manual list entry
     blocklist_urls = []
     blocklist_url_input_type = 'a' #Default
@@ -309,7 +321,7 @@ def get_user_input():
             continue
 
         if blocklist_url_input_type == 'q':
-            return
+            return None
 
         if blocklist_url_input_type == 'a' or blocklist_url_input_type == 'b':
             break
@@ -339,7 +351,7 @@ def get_user_input():
                     continue
 
                 if filepath == 'q':
-                    return
+                    return None
 
                 if pathlib.Path(filepath).suffix != '.txt':
                     raise ValueError
@@ -364,14 +376,37 @@ def get_user_input():
 
             break
 
-    print("Datapoints: ", datapoints)
-    print("Browser: " + str(browser))
-    print("urls ", urls)
-    print("blocklist urls", blocklist_urls)
+    return blocklist_urls
 
-    print("Starting analysis")
+    #print("Datapoints: ", datapoints)
+    #print("Browser: " + str(browser))
+    #print("urls ", urls)
+    #print("blocklist urls", blocklist_urls)
 
-    return datapoints,browser,urls,blocklist_urls
+    #print("Starting analysis")
+
+def get_user_input():
+
+    print("Welcome to tracker hacker!\n")
+    print("To begin, select your datapoints and url inputs. (Type help for manual, q to quit)\n")
+
+    d = datapoints()
+    if d is None:
+        exit()
+
+    b = browser_choice()
+    if b is None:
+        exit()
+
+    u = urls()
+    if u is None:
+        exit()
+
+    bl = adtrack_list()
+    if bl is None:
+        exit()
+
+    return d,b,u,bl
 
 
 if __name__ == "__main__":
