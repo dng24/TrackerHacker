@@ -8,9 +8,9 @@ def main():
     
     # Determines what interface to use
     if len(sys.argv) > 1:
-        datapoints, browsers, urls, blocklist_urls = userinput.get_userinput_args()
+        datapoints, browsers, urls, blocklist_urls = userinput.get_userinput_cli()
     else:
-        datapoints, browsers, urls, blocklist_urls = userinput.get_user_input()
+        datapoints, browsers, urls, blocklist_urls = userinput.get_user_input_gui()
 
     # 2. open urls with selenium and capture traffic with web proxy
     print(browsers)

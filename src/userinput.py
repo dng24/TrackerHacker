@@ -12,7 +12,7 @@ from browsers import WebBrowsers
 def help():
     print("\n\nWelcome to tracker hacker, a convenient tool to show what trackers are spying on you when you visit a webpage. Usage of the tool is easy!\n\nFirst, enter the types of FINISH")
 
-def get_userinput_args():
+def get_userinput_cli():
     print("args")
     
 
@@ -385,7 +385,7 @@ def adtrack_list():
 
     #print("Starting analysis")
 
-def get_user_input():
+def get_user_input_gui():
 
     print("Welcome to tracker hacker!\n")
     print("To begin, select your datapoints and url inputs. (Type help for manual, q to quit)\n")
@@ -411,6 +411,6 @@ def get_user_input():
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        get_userinput_args()
+        get_userinput_cli()
     else:
-        get_user_input()
+        get_user_input_gui()
