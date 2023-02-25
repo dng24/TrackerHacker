@@ -22,6 +22,10 @@ def collect_fqdns(urls: list, browsers: list, proxy_ip: str="127.0.0.1", proxy_p
 
     os.environ["http_proxy"] = "http://%s:%d" % (proxy_ip, proxy_port)
     os.environ["https_proxy"] = "http://%s:%d" % (proxy_ip, proxy_port)
+    os.environ["no_proxy"] = "localhost,127.0.0.1,::1"
+    os.environ["HTTP_PROXY"] = "http://%s:%d" % (proxy_ip, proxy_port)
+    os.environ["HTTPS_PROXY"] = "http://%s:%d" % (proxy_ip, proxy_port)
+    os.environ["NO_PROXY"] = "localhost,127.0.0.1,::1"
 
     proxy = webproxy.Proxy(request_timeout)
     print("Starting proxy")
@@ -77,5 +81,5 @@ async def _start_proxy(proxy: webproxy.Proxy, host: str, port: int):
 
 
 if __name__ == "__main__":
-    collect_fqdns(["https://google.com"], [browsermanager.WebBrowsers.EDGE, browsermanager.WebBrowsers.CHROME])
+    collect_fqdns(["https://google.com"], [browsermanager.WebBrowsers.EDGE, browsermanager.WebBrowsers.CHROME, browsermanager.WebBrowsers.BRAVE, browsermanager.WebBrowsers.FIREFOX])
 

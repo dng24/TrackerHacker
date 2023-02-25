@@ -1,3 +1,4 @@
+import os
 import selenium
 import sys
 
@@ -43,6 +44,7 @@ class WebDrivers:
         driver = None
         if browser == WebBrowsers.CHROME:
             opts = webdriver.ChromeOptions()
+            opts.add_argument("--proxy-server=http://%s:%d" % (proxy_ip, proxy_port))
             if browser_path is not None:
                 opts.binary_location = browser_path
             try:
@@ -65,6 +67,7 @@ class WebDrivers:
                 print("ur firefox is broke or missing")
         elif browser == WebBrowsers.EDGE:
             opts = webdriver.EdgeOptions()
+            opts.add_argument("--proxy-server=http://%s:%d" % (proxy_ip, proxy_port))
             if browser_path is not None:
                 opts.binary_location = browser_path
             try:
@@ -73,6 +76,7 @@ class WebDrivers:
                 print("ur edge is broke or missing")
         elif browser == WebBrowsers.BRAVE:
             opts = webdriver.ChromeOptions()
+            opts.add_argument("--proxy-server=http://%s:%d" % (proxy_ip, proxy_port))
             if browser_path is not None:
                 opts.binary_location = browser_path
             if sys.platform.startswith("linux"):

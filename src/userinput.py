@@ -152,6 +152,8 @@ def browser_choice():
         print("\n Please select the browser for tracker hacker to query\n")
         print("a)    Chrome\n")
         print("b)    Firefox\n")
+        print("c)    Edge\n")
+        print("d)    Brave\n")
 
         try:
             browser_choice = input("--->   ")
@@ -171,6 +173,12 @@ def browser_choice():
             break
         elif browser_choice == 'b':
             browser.append(WebBrowsers.FIREFOX)
+            break
+        elif browser_choice == 'c':
+            browser.append(WebBrowsers.EDGE)
+            break
+        elif browser_choice == 'd':
+            browser.append(WebBrowsers.BRAVE)
             break
         else:
             print("\nPlease enter a valid choice for browser")
