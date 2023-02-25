@@ -7,7 +7,7 @@ import pathlib
 import validators
 import argparse
 
-from browsers import WebBrowsers
+from browsermanager import WebBrowsers
 
 def help():
     print("\n\nWelcome to tracker hacker, a convenient tool to show what trackers are spying on you when you visit a webpage. Usage of the tool is easy!\n\nFirst, enter the types of FINISH")

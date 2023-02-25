@@ -13,6 +13,7 @@ def main():
         datapoints, browsers, urls, blocklist_urls = userinput.get_user_input_gui()
 
     # 2. open urls with selenium and capture traffic with web proxy
+    # TODO: add absolute timeout and support for browser paths
     print(browsers)
     fqdns = datacollection.collect_fqdns(urls, browsers)
 
