@@ -50,7 +50,7 @@ class WebDrivers:
             try:
                 driver = webdriver.Chrome(service=ChromiumService(self.driver_paths[WebBrowsers.CHROME]), chrome_options=opts)
             except selenium.common.exceptions.WebDriverException:
-                print("ur chrome is broke or missing")
+                print("Oh no, it looks like something went wrong when loading Chrome! Please make sure that the Chrome browser is not missing and the path is correct.")
         elif browser == WebBrowsers.FIREFOX:
             # setup firefox proxy
             opts = webdriver.FirefoxOptions()
@@ -64,7 +64,7 @@ class WebDrivers:
             try:
                 driver = webdriver.Firefox(options=opts, service=FirefoxService((self.driver_paths[WebBrowsers.FIREFOX])))
             except selenium.common.exceptions.WebDriverException:
-                print("ur firefox is broke or missing")
+                print("Oh no, it looks like something weent wrong when loading Firefox! Please make sure that the Firefox browser is not missing and the path is correct.")
         elif browser == WebBrowsers.EDGE:
             opts = webdriver.EdgeOptions()
             opts.add_argument("--proxy-server=http://%s:%d" % (proxy_ip, proxy_port))
@@ -73,7 +73,7 @@ class WebDrivers:
             try:
                 driver = webdriver.Edge(service=EdgeService(self.driver_paths[WebBrowsers.EDGE]), options=opts)
             except selenium.common.exceptions.WebDriverException:
-                print("ur edge is broke or missing")
+                print("Oh no, it looks like something went wrong loading Edge! Please make sure that the Edge browser is not missing and the path is correct.")
         elif browser == WebBrowsers.BRAVE:
             opts = webdriver.ChromeOptions()
             opts.add_argument("--proxy-server=http://%s:%d" % (proxy_ip, proxy_port))
@@ -86,13 +86,13 @@ class WebDrivers:
             elif sys.platform.startswith("darwin"):
                 opts.binary_location = DEFAULT_BRAVE_MAC_PATH
             else:
-                print("can't find brave - pls provide path")
+                print("Oh no, it looks like something went wrong loading Brave! Please make sure that the Brave browser is not missing and the path is correct.")
                 return driver
 
             try:
                 driver = webdriver.Chrome(service=ChromiumService(self.driver_paths[WebBrowsers.BRAVE]), chrome_options=opts)
             except selenium.common.exceptions.WebDriverException:
-                print("ur brave is broke or missing")
+                print("Oh no, it looks like something went wrong loading Brave! Please make sure that the Brave browser is not missing and the path is correct.")
 
         return driver
 
