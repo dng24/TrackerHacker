@@ -22,9 +22,10 @@ def get_userinput_cli():
     adlist_urls = []
     parser = argparse.ArgumentParser()
     
-    parser.add_argument("-d", "--data", nargs='*', help="Data types to output. 1: Whois, 2: IP geolocation, 3: Owner. For multipe choices, enter them space delimited, eg: -d 1 2 for whois and IP geolocation.", type=int)
-    parser.add_argument("-b", "--browser", nargs='*', help="Which browser to use. 1: Chrome, 2: Firefox. For multiple choices, enter them space delimited, eg: 1 2 for Chrome and Firefox", type=int)
-    parser.add_argument("-u", "--urls", help="URLs to analyze. Provide the path of a .txt file with a list of urls, with only a single url per line.")
+    parser.add_argument("-d", "--data", nargs='*', help="Data types to output. 1: Whois, 2: IP geolocation, 3: Owner. For multipe choices, enter them space delimited, eg: -d 1 2 for whois and IP geolocation.", type=int, choices=[1,2,3])
+    parser.add_argument("-b", "--browser", nargs='*', help="Which browser to use. 1: Chrome, 2: Firefox, 3: Edge, 4: Brave. For multiple choices, enter them space delimited, eg: 1 2 for Chrome and Firefox", type=int, choices=[1,2,3,4])
+    parser.add_argument("-uf", "--urlfile", help="File of URLs to analyze. Provide the path of a .txt file with a list of urls, with only a single url per line.")
+    parser.add_argument("-u", "--urls", nargs='*', help="URLs to analyze. Manually type urls to analyze, space delimited.")
     parser.add_argument("-l", "--list", help="List of ads/trackers. Please either enter \'default\' to use the default list of ads/trackers, or provide the path of a .txt file with a list of custom ad/tracker urls, with only a single url per line.")
     
     args = parser.parse_args()
@@ -47,16 +48,17 @@ def get_userinput_cli():
         for choice in args.browser:
             if choice == 1:
                 browsers.append(WebBrowsers.CHROME)
-            elif choice == 2:
+            if choice == 2:
                 browsers.append(WebBrowsers.FIREFOX)
-            else:
-                continue
+            if choice == 3:
+                browsers.append(WebBrowsers.EDGE)
+            if choice == 4:
+                browsers.append(WebBrowsers.BRAVE)
     else:
         browsers.append(WebBrowsers.FIREFOX)
 
     
-    if args.urls:
-        
+    if args.urlfile:
         if pathlib.Path(args.urls).suffix != '.txt':
             print("\nOops! Looks like there was a problem loading your urls file. Please make sure that it is a valid path and a correctly formatted .txt file")          
         else:    
@@ -76,6 +78,22 @@ def get_userinput_cli():
                     print("[X]: {}".format(url.strip()))
                     malformed += 1 
             f.close()
+
+    if args.urls:
+        count = 0
+        malformed = 0
+        for url in args.urls:
+            try:
+                if validators.url(url.strip()):
+                    print("[{}]: {}".format(count, url.strip()))
+                    urls.append(url.strip())
+                    count += 1
+                else:
+                    print("[X]: {}".format(url.strip()))
+                    malformed += 1
+            except:
+                print("[X]: {}".format(url.strip()))
+                malformed += 1
 
     if args.list:
         if pathlib.Path(args.list).suffix != '.txt':
