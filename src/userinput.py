@@ -64,7 +64,11 @@ def get_userinput_cli():
         else:    
             count = 0
             malformed = 0
+            print("Loading urls:")
+            #try:
             f = open(args.urls, "r")
+            #except:
+            #    print("Oops, looks like there was a problem reading your url file! Please make sure it is the correct format/file type and the path is correct")
             for url in f:
                 try:
                     if validators.url(url.strip()):
@@ -79,9 +83,12 @@ def get_userinput_cli():
                     malformed += 1 
             f.close()
 
+            print("\n{} Malformed urls included in your file. Added {} valid urls, continuing...\n".format(malformed, count))
+
     if args.urls:
         count = 0
         malformed = 0
+        print("Loading urls:")
         for url in args.urls:
             try:
                 if validators.url(url.strip()):
@@ -94,6 +101,8 @@ def get_userinput_cli():
             except:
                 print("[X]: {}".format(url.strip()))
                 malformed += 1
+
+        print("\n{} Malformed urls included in your file. Added {} valid urls, continuing...\n".format(malformed, count))
 
     if args.list:
         if pathlib.Path(args.list).suffix != '.txt':
