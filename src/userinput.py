@@ -139,10 +139,9 @@ def datapoints():
                 continue
 
             if data_choice == 'q':
-                #NOTE: set to verify unittest mock inputs, might want to keep
                 return None
 
-        except:
+        except Exception:
             print("\nOops, something went wrong with your input. Please try again")
             continue
         
@@ -274,7 +273,7 @@ def urls():
                     continue
 
                 break
-            except:
+            except Exception:
                 print("Malformed URL entered, please type your desired url again\n")
                 continue
 
