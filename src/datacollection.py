@@ -15,7 +15,7 @@ import webproxy
 results = {}
 
 
-def collect_fqdns(urls: list, browsers: list, proxy_ip: str="127.0.0.1", proxy_port: int=8080, request_timeout: int=5) -> dict:
+def collect_fqdns(urls: list, browsers: list, proxy_ip: str="127.0.0.1", proxy_port: int=8080, request_timeout: int=5, headless: bool=False) -> dict:
     webdrivers = browsermanager.WebDrivers()
     for browser in browsers:
         webdrivers.download_driver(browser)
@@ -36,7 +36,7 @@ def collect_fqdns(urls: list, browsers: list, proxy_ip: str="127.0.0.1", proxy_p
     for url in urls:
         results[url] = {}
         for browser in browsers:
-            driver = webdrivers.get_driver(browser, proxy_ip=proxy_ip, proxy_port=proxy_port)
+            driver = webdrivers.get_driver(browser, proxy_ip=proxy_ip, proxy_port=proxy_port, headless=headless)
             if driver is None:
                 continue
 
