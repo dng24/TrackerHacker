@@ -40,10 +40,12 @@ class WebDrivers:
             raise("Browser not supported: %s" % browser)
 
     
-    def get_driver(self, browser: WebBrowsers, browser_path: str=None, proxy_ip: str="127.0.0.1", proxy_port: int=8080) -> webdriver:
+    def get_driver(self, browser: WebBrowsers, browser_path: str=None, proxy_ip: str="127.0.0.1", proxy_port: int=8080, headless: bool=False) -> webdriver:
         driver = None
         if browser == WebBrowsers.CHROME:
             opts = webdriver.ChromeOptions()
+            if headless:
+                opts.headless = True
             opts.add_argument("--proxy-server=http://%s:%d" % (proxy_ip, proxy_port))
             if browser_path is not None:
                 opts.binary_location = browser_path
@@ -54,6 +56,8 @@ class WebDrivers:
         elif browser == WebBrowsers.FIREFOX:
             # setup firefox proxy
             opts = webdriver.FirefoxOptions()
+            if headless:
+                opts.headless = True
             opts.set_preference("network.proxy.type", 1)
             opts.set_preference("network.proxy.http", proxy_ip)
             opts.set_preference("network.proxy.http_port", proxy_port)
@@ -67,6 +71,8 @@ class WebDrivers:
                 print("Oh no, it looks like something weent wrong when loading Firefox! Please make sure that the Firefox browser is not missing and the path is correct.")
         elif browser == WebBrowsers.EDGE:
             opts = webdriver.EdgeOptions()
+            if headless:
+                opts.headless = True
             opts.add_argument("--proxy-server=http://%s:%d" % (proxy_ip, proxy_port))
             if browser_path is not None:
                 opts.binary_location = browser_path
@@ -76,6 +82,8 @@ class WebDrivers:
                 print("Oh no, it looks like something went wrong loading Edge! Please make sure that the Edge browser is not missing and the path is correct.")
         elif browser == WebBrowsers.BRAVE:
             opts = webdriver.ChromeOptions()
+            if headless:
+                opts.headless = True
             opts.add_argument("--proxy-server=http://%s:%d" % (proxy_ip, proxy_port))
             if browser_path is not None:
                 opts.binary_location = browser_path
