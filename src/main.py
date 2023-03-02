@@ -8,14 +8,14 @@ def main():
     
     # Determines what interface to use
     if len(sys.argv) > 1:
-        datapoints, browsers, urls, blocklist_urls = userinput.get_userinput_cli()
+        datapoints, browsers, urls, blocklist_urls, headless = userinput.get_userinput_cli()
     else:
-        datapoints, browsers, urls, blocklist_urls = userinput.get_user_input_gui()
+        datapoints, browsers, urls, blocklist_urls, headless = userinput.get_user_input_gui()
 
     # 2. open urls with selenium and capture traffic with web proxy
     # TODO: add absolute timeout and support for browser paths
     print(browsers)
-    fqdns = datacollection.collect_fqdns(urls, browsers)
+    fqdns = datacollection.collect_fqdns(urls, browsers, headless=headless)
 
     # 3. separate ad/tracking domains from other domains
 
