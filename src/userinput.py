@@ -21,13 +21,17 @@ def get_userinput_cli():
     urls = []
     adlist_urls = []
     parser = argparse.ArgumentParser()
-    
+    headless = False
+
     parser.add_argument("-d", "--data", nargs='*', help="Data types to output. 1: Whois, 2: IP geolocation, 3: Owner. For multipe choices, enter them space delimited, eg: -d 1 2 for whois and IP geolocation.", type=int, choices=[1,2,3])
     parser.add_argument("-b", "--browser", nargs='*', help="Which browser to use. 1: Chrome, 2: Firefox, 3: Edge, 4: Brave. For multiple choices, enter them space delimited, eg: 1 2 for Chrome and Firefox", type=int, choices=[1,2,3,4])
     parser.add_argument("-uf", "--urlfile", help="File of URLs to analyze. Provide the path of a .txt file with a list of urls, with only a single url per line.")
     parser.add_argument("-u", "--urls", nargs='*', help="URLs to analyze. Manually type urls to analyze, space delimited.")
     parser.add_argument("-l", "--list", help="List of ads/trackers. Please either enter \'default\' to use the default list of ads/trackers, or provide the path of a .txt file with a list of custom ad/tracker urls, with only a single url per line.")
+    parser.add_argument("-hl", "--headless", help="Run program in headless mode. No interface for selenium browser will be launched. Default is non-headless", action='store_true')
     
+
+
     args = parser.parse_args()
     
     if args.data:
@@ -113,13 +117,16 @@ def get_userinput_cli():
                 adlist_urls.append(ad.strip())
             f.close()
 
+    if args.headless:
+        headless = True
+
     #print("Choices", datapoints)
     #print("Browsers", browsers)
     #print("Urls", urls)
     #print("Adlist", adlist_urls)
 
 
-    return datapoints, browsers, urls, adlist_urls
+    return datapoints, browsers, urls, adlist_urls, headless
 
 def datapoints():
 
