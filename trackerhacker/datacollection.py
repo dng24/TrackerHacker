@@ -7,8 +7,8 @@ import time
 from mitmproxy.tools import main
 from mitmproxy.tools.dump import DumpMaster
 
-import browsermanager
-import webproxy
+from trackerhacker import browsermanager
+from trackerhacker import webproxy
 
 
 def collect_fqdns(logger, urls: list, browsers: list, proxy_ip: str="127.0.0.1", proxy_port: int=8080, request_timeout: int=5, headless: bool=False) -> dict:
@@ -64,9 +64,8 @@ def collect_fqdns(logger, urls: list, browsers: list, proxy_ip: str="127.0.0.1",
             except selenium.common.exceptions.WebDriverException:
                 pass
 
-            logger.debug("RESULTS:", proxy.get_fqdns())
+            logger.debug("RESULTS: %s" % proxy.get_fqdns())
             results[url][browser] = proxy.get_fqdns()
-
 
     logger.debug("shutting down proxy")
     proxy.shutdown_proxy()
@@ -83,8 +82,3 @@ async def _start_proxy(proxy: webproxy.Proxy, host: str, port: int):
     master.addons.add(proxy)
     await master.run()
     return master
-
-
-if __name__ == "__main__":
-    collect_fqdns(["https://google.com"], [browsermanager.WebBrowsers.EDGE, browsermanager.WebBrowsers.CHROME, browsermanager.WebBrowsers.BRAVE, browsermanager.WebBrowsers.FIREFOX])
-

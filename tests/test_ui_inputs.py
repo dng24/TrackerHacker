@@ -1,7 +1,7 @@
 from unittest import mock
 from unittest import TestCase
-from browsermanager import WebBrowsers
-import userinput
+from trackerhacker.browsermanager import WebBrowsers
+from trackerhacker import userinput
 
 class TestUIInputs(TestCase):
     @mock.patch('userinput.input', create=True)

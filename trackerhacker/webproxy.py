@@ -53,4 +53,4 @@ class Proxy:
             else:
                 self.fqdns[fqdn] = 1
 
-            print(flow.request.host)
+            self._logger.debug(flow.request.host)

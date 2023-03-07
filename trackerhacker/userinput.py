@@ -7,7 +7,7 @@ import pathlib
 import validators
 import argparse
 
-from browsermanager import WebBrowsers
+from trackerhacker.browsermanager import WebBrowsers
 
 def help():
     print("\n\nWelcome to tracker hacker, a convenient tool to show what trackers are spying on you when you visit a webpage. Usage of the tool is easy!\n\nFirst, enter the types of FINISH")
@@ -372,7 +372,7 @@ def adtrack_list():
 
     if blocklist_url_input_type == 'a':
         try:
-            f= open("default_list.txt", "r")
+            f= open("adlists/default_list.txt", "r")
             for url in f:
                 blocklist_urls.append(url.strip())
         except:
