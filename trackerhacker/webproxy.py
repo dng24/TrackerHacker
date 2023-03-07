@@ -48,9 +48,13 @@ class Proxy:
         if self.data_collection_in_progress:
             self.request_made_since_last_check = True
             fqdn = flow.request.host
-            if fqdn in self.fqdns:
-                self.fqdns[fqdn] += 1
-            else:
-                self.fqdns[fqdn] = 1
+            url = "%s://%s%s" % (flow.request.scheme, fqdn, flow.request.path)
+            if fqdn not in self.fqdns:
+                self.fqdns[fqdn] = {}
 
-            self._logger.debug(flow.request.host)
+            if url in self.fqdns[fqdn]:
+                self.fqdns[fqdn][url] += 1
+            else:
+                self.fqdns[fqdn][url] = 1
+
+            self._logger.debug(fqdn)

@@ -12,7 +12,7 @@ from trackerhacker import webproxy
 
 
 def collect_fqdns(logger, urls: list, browsers: list, proxy_ip: str="127.0.0.1", proxy_port: int=8080, request_timeout: int=5, headless: bool=False) -> dict:
-    # results: each url contains dict of browsers, which contains list of fqdns where requests were made when loading url in browser
+    # results: each url contains dict of browsers, which contains dict of fqdns, which contains dict of full request url to number request made to that url
     results = {}
 
     webdrivers = browsermanager.WebDrivers(logger)
