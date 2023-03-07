@@ -6,12 +6,12 @@ from mitmproxy import ctx, http
 
 class Proxy:
     
-    def __init__(self, request_timeout: int=5) -> None:
+    def __init__(self, logger, request_timeout: int=5) -> None:
+        self._logger = logger
         self.fqdns = {}
         self.request_made_since_last_check = True
         self.data_collection_in_progress = False
         self.request_timeout = request_timeout
-        print("init")
 
 
     def collect_data(self) -> None:
@@ -28,7 +28,7 @@ class Proxy:
             self.request_made_since_last_check = False
             time.sleep(request_timeout)
 
-        print("timeout reached")
+        self._logger.debug("timeout reached")
         self.data_collection_in_progress = False
 
 

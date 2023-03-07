@@ -447,7 +447,8 @@ def get_user_input_gui():
     if bl is None:
         exit()
 
-    return d,b,u,bl
+    # TODO: do we want to allow headless on gui input?
+    return d,b,u,bl,False
 
 
 if __name__ == "__main__":

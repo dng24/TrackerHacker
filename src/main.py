@@ -1,9 +1,22 @@
-import userinput
-import datacollection
-import sys
+try:
+    import logging
+    import sys
 
-def main():
-    print("init")
+    import userinput
+    import datacollection
+except ModuleNotFoundError:
+    print("Required modules could not be imported. To install required libraries, please run:\n\tpip3 install -r requirements.txt")
+    exit(1)
+
+
+LOGGER_FORMAT = "[TRACKER HACKER] %(levelname)-8s: %(message)s"
+
+
+def main() -> None:
+    logging.basicConfig(format=LOGGER_FORMAT)
+    logger = logging.getLogger("tracker_hacker")
+    logger.setLevel(logging.DEBUG)
+
     # 1. parse args
     
     # Determines what interface to use
@@ -15,13 +28,16 @@ def main():
     # 2. open urls with selenium and capture traffic with web proxy
     # TODO: add absolute timeout and support for browser paths
     print(browsers)
-    fqdns = datacollection.collect_fqdns(urls, browsers, headless=headless)
+    fqdns = datacollection.collect_fqdns(logger, urls, browsers, headless=headless)
+    if fqdns is None:
+        exit(1)
 
     # 3. separate ad/tracking domains from other domains
 
     # 4. use ad/tracking domain names to get data we want
 
     # 5. make visualizations/reports
+
 
 if __name__ == "__main__":
     main()

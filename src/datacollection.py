@@ -11,14 +11,14 @@ import browsermanager
 import webproxy
 
 
-# results: each url contains dict of browsers, which contains list of fqdns where requests were made when loading url in browser
-results = {}
+def collect_fqdns(logger, urls: list, browsers: list, proxy_ip: str="127.0.0.1", proxy_port: int=8080, request_timeout: int=5, headless: bool=False) -> dict:
+    # results: each url contains dict of browsers, which contains list of fqdns where requests were made when loading url in browser
+    results = {}
 
-
-def collect_fqdns(urls: list, browsers: list, proxy_ip: str="127.0.0.1", proxy_port: int=8080, request_timeout: int=5, headless: bool=False) -> dict:
-    webdrivers = browsermanager.WebDrivers()
+    webdrivers = browsermanager.WebDrivers(logger)
     for browser in browsers:
-        webdrivers.download_driver(browser)
+        if not webdrivers.download_driver(browser):
+            return None
 
     os.environ["http_proxy"] = "http://%s:%d" % (proxy_ip, proxy_port)
     os.environ["https_proxy"] = "http://%s:%d" % (proxy_ip, proxy_port)
@@ -27,8 +27,8 @@ def collect_fqdns(urls: list, browsers: list, proxy_ip: str="127.0.0.1", proxy_p
     os.environ["HTTPS_PROXY"] = "http://%s:%d" % (proxy_ip, proxy_port)
     os.environ["NO_PROXY"] = "localhost,127.0.0.1,::1"
 
-    proxy = webproxy.Proxy(request_timeout)
-    print("Starting proxy")
+    proxy = webproxy.Proxy(logger, request_timeout)
+    logger.info("Starting proxy")
     # launch proxy in background
     t = threading.Thread(target=_start_proxy_launcher, args=(proxy, proxy_ip, proxy_port))
     t.start()
@@ -36,36 +36,41 @@ def collect_fqdns(urls: list, browsers: list, proxy_ip: str="127.0.0.1", proxy_p
     for url in urls:
         results[url] = {}
         for browser in browsers:
+            logger.info("Launching %s to open %s" % (browser.value, url))
             driver = webdrivers.get_driver(browser, proxy_ip=proxy_ip, proxy_port=proxy_port, headless=headless)
             if driver is None:
                 continue
 
             time.sleep(2)
             proxy.collect_data()
-            print("launching webpage")
             try:
                 driver.get(url)
             except selenium.common.exceptions.WebDriverException:
-                print("Unable to connect to %s" % url)
-                driver.close()
+                logger.error("Unable to connect to '%s'. This may be because\n\t- There is no internet connection\n\t- The browser has been closed\n\t- The URL is not valid" % url)
+                try:
+                    driver.close()
+                except selenium.common.exceptions.WebDriverException:
+                    pass
+                
                 continue
 
             # wait for the data to be collected
             while proxy.is_data_collection_in_progress():
                 time.sleep(2)
 
-            print("closing webpage")
+            logger.debug("closing webpage")
             try:
                 driver.close()
             except selenium.common.exceptions.WebDriverException:
                 pass
 
-            print("RESULTS:", proxy.get_fqdns())
+            logger.debug("RESULTS:", proxy.get_fqdns())
             results[url][browser] = proxy.get_fqdns()
 
 
-    print("shutting down proxy")
+    logger.debug("shutting down proxy")
     proxy.shutdown_proxy()
+    return results
 
 
 def _start_proxy_launcher(proxy: webproxy.Proxy, host: str, port: int) -> None:
