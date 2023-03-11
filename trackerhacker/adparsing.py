@@ -13,6 +13,8 @@ def parse_fqdns(collected_list, domain_file):
 
     f = open(domain_file, 'r')
     raw_rules = f.readlines()
+    
+    #Creates engine instance
     rules = AdblockRules(raw_rules)
     #rules = AdblockRules(["https://adservice.google.com"])
     f.close()
@@ -20,13 +22,14 @@ def parse_fqdns(collected_list, domain_file):
 
     blockers = ["ad", "ads", "analytic", "tag", "tags", "pixel", "pxl", "px", "pix", "beacon", "metrics", "smetrics", "tracking", "track", "tracker", "sync"]
 
-
-
     for u in collected_list:
         #blockresult = rules.should_block(u)   
         #print(f"{u} W/o https head:  ", blockresult)
-        
+       
+        #Manual check for custom params   
         blockresult = any(sd in blockers for sd in u.split("."))
+        
+        #Adblockparser engine check against list
         blockresult = blockresult or rules.should_block("https://" + u)
         print(f"{u} W/ https head:   ", blockresult)
 
@@ -41,4 +44,4 @@ def parse_fqdns(collected_list, domain_file):
         #print(blockresult)
 
 
-parse_fqdns(["adservice.google.com", "a2.adform.net/", "www.hostg.xyz/", "c1.adform.net", "2mdn.net"], 'easylist.txt')
+parse_fqdns(["adservice.google.com", "a2.adform.net/", "www.hostg.xyz/", "c1.adform.net", "2mdn.net"], '/TrackerHacker/adlists/easylist.txt')
