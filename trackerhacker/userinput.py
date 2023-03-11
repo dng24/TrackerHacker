@@ -82,7 +82,7 @@ def get_userinput_cli():
                     else:
                         print("[X]: {}".format(url.strip()))
                         malformed += 1
-                except:
+                except Exception:
                     print("[X]: {}".format(url.strip()))
                     malformed += 1 
             f.close()
@@ -102,7 +102,7 @@ def get_userinput_cli():
                 else:
                     print("[X]: {}".format(url.strip()))
                     malformed += 1
-            except:
+            except Exception:
                 print("[X]: {}".format(url.strip()))
                 malformed += 1
 
@@ -197,7 +197,7 @@ def browser_choice():
 
             if browser_choice == 'q':
                 return None
-        except:
+        except Exception:
             print("\nOops! Something went wrong with your input. Please try again")
             continue
 
@@ -233,7 +233,7 @@ def urls():
        
         try:
             url_input_type = input("\nPlease enter what type of url input you will use:  ")
-        except:
+        except Exception:
             print("\nOops! There was a problem with your input, please try again.")
 
         if (url_input_type == "help") or (url_input_type == "Help") or (url_input_type == 'h'):
@@ -307,7 +307,7 @@ def urls():
 
             try:
                 f = open(filepath, "r")
-            except:
+            except Exception:
                 print("\nOops! Looks like there was a problem referencing the file. Make sure you entered the path correctly and the file is a txt file.")
                 continue
 
@@ -325,7 +325,7 @@ def urls():
                     else:
                         print("[X]: {}".format(url.strip()))
                         malformed += 1
-                except:
+                except Exception:
                     print("[X]: {}".format(url.strip()))
                     malformed += 1
 
@@ -354,7 +354,7 @@ def adtrack_list():
 
         try:
             blocklist_url_input_type = input("\nPlease enter what type of url input you will use:  ")
-        except:
+        except Exception:
             print("\nOops! There was a problem with your input, please try again.")
 
         if (blocklist_url_input_type == "help") or (blocklist_url_input_type == "Help") or (blocklist_url_input_type == 'h'):
@@ -375,7 +375,7 @@ def adtrack_list():
             f= open("adlists/default_list.txt", "r")
             for url in f:
                 blocklist_urls.append(url.strip())
-        except:
+        except Exception:
             print("Oops, looks like something is wrong with the default list file. Please make sure it is in the proper directory and the right format. Aborting program.\n")
             return
         f.close()
@@ -397,7 +397,7 @@ def adtrack_list():
                 if pathlib.Path(filepath).suffix != '.txt':
                     raise ValueError
 
-            except:
+            except Exception:
                 print("\nOops! Looks like there was a problem referencing the file. Make sure you entered the path correctly and the file is a txt file.")
                 continue
 
@@ -410,7 +410,7 @@ def adtrack_list():
             for url in f:
                 try:
                     blocklist_urls.append(url.strip())
-                except:
+                except Exception:
                     print("Oops, looks like something is wrong with the default list file, and an error occured when processing it. Please make sure it is in the proper directory and the right format.\n")
                     continue
             f.close()
@@ -425,6 +425,31 @@ def adtrack_list():
     #print("blocklist urls", blocklist_urls)
 
     #print("Starting analysis")
+
+def headless_run():
+    headless = False
+    while True:
+        try:
+            headless_choice = input("\nPlease select if you would like to run this program headless (without the selenium web browser visual interface running). Enter y/yes for yes, any other key for no.")
+            
+            if (headless_choice == "help") or (headless_choice == "Help") or (headless_choice == 'h'):
+                help()
+                continue
+
+            if headless_choice == 'q':
+                return None 
+
+            break
+
+        except Exception:
+            print("\nOops, something went wrong with your input. Please try again")
+            continue
+
+    if (headless_choice == 'y') or (headless_choice == "yes"):
+        headeless == True
+
+
+    return headless
 
 def get_user_input_gui():
 
@@ -447,8 +472,12 @@ def get_user_input_gui():
     if bl is None:
         exit()
 
+    headless = headless_run()
+    if headless is None:
+        exit()
+
     # TODO: do we want to allow headless on gui input?
-    return d,b,u,bl,False
+    return d,b,u,bl,headless
 
 
 if __name__ == "__main__":
