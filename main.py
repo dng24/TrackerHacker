@@ -24,6 +24,7 @@ def main() -> None:
     # 1. parse args
     
     # Determines what interface to use
+    # If user is using command line args, it uses cli run, otherwise it defaults to gui
     if len(sys.argv) > 1:
         datapoints, browsers, urls, blocklist_urls, headless = userinput.get_userinput_cli()
     else:
