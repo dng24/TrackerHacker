@@ -446,7 +446,7 @@ def headless_run():
             continue
 
     if (headless_choice == 'y') or (headless_choice == "yes"):
-        headeless == True
+        headless = True
 
 
     return headless
