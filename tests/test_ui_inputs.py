@@ -1,29 +1,102 @@
+import sys
+sys.path.insert(0, r'C:\Users\treba\Documents\GitHub\TrackerHacker\trackerhacker')
+import userinput
 from unittest import mock
 from unittest import TestCase
-from trackerhacker.browsermanager import WebBrowsers
-from trackerhacker import userinput
 
 class TestUIInputs(TestCase):
     @mock.patch('userinput.input', create=True)
     def test_datapoints_quit(self, mocked_input):
-        mocked_input.side_effect = ['q']
-        result = userinput.datapoints()
-        self.assertEqual(result, None)
+        possible_entry_quits = [
+            ['q'],
+            ['a', 'q'],
+            ['a', 'y', 'b', 'q']
+        ]
+        for possible_entry_quit in possible_entry_quits:
+            mocked_input.side_effect = possible_entry_quit
+            result = userinput.datapoints()
+            self.assertEqual(result, None)
 
     @mock.patch('userinput.input', create=True)
-    def test_datapoints_a(self, mocked_input):
-        mocked_input.side_effect = ['a', 'n']
-        result = userinput.datapoints()
-        self.assertListEqual(result, ['a'])
+    def test_browser_choice_quit(self, mocked_input):
+        possible_entry_quits = [
+            ['q']
+        ]
+        for possible_entry_quit in possible_entry_quits:
+            mocked_input.side_effect = possible_entry_quit
+            result = userinput.browser_choice()
+            self.assertEqual(result, None)
 
     @mock.patch('userinput.input', create=True)
-    def test_url_immediate_quit(self, mocked_input):
-        mocked_input.side_effect = ['q']
-        result = userinput.urls()
-        self.assertEqual(result, None)
+    def test_urls_quit(self, mocked_input):
+        possible_entry_quits = [
+            ['q'],
+            ['a', 'q'],
+            ['a', 'http://www.duckduckgo.com', 'q'],
+            ['a', 'http://www.duckduckgo.com', 'y', 'q']
+        ]
+        for possible_entry_quit in possible_entry_quits:
+            mocked_input.side_effect = possible_entry_quit
+            result = userinput.urls()
+            print(possible_entry_quit)
+            self.assertEqual(result, None)
 
     @mock.patch('userinput.input', create=True)
-    def test_url_manual_quit(self, mocked_input):
-        mocked_input.side_effect = ['a', 'q']
-        result = userinput.urls()
-        self.assertEqual(result, None)
+    def test_adtrack_list_quit(self, mocked_input):
+        possible_entry_quits = [
+            ['q'],
+            ['b', 'q']
+        ]
+        for possible_entry_quit in possible_entry_quits:
+            mocked_input.side_effect = possible_entry_quit
+            result = userinput.adtrack_list()
+            print(possible_entry_quit)
+            self.assertEqual(result, None)
+
+    @mock.patch('userinput.input', create=True)
+    def test_datapoints_quit(self, mocked_input):
+        possible_entry_quits = [
+            ['h'],
+            ['a', 'h'],
+            ['a', 'y', 'b', 'h']
+        ]
+        for possible_entry_quit in possible_entry_quits:
+            mocked_input.side_effect = possible_entry_quit
+            result = userinput.datapoints()
+            self.assertEqual(result, None)
+
+    @mock.patch('userinput.input', create=True)
+    def test_browser_choice_quit(self, mocked_input):
+        possible_entry_quits = [
+            ['h']
+        ]
+        for possible_entry_quit in possible_entry_quits:
+            mocked_input.side_effect = possible_entry_quit
+            result = userinput.browser_choice()
+            self.assertEqual(result, None)
+
+    @mock.patch('userinput.input', create=True)
+    def test_urls_quit(self, mocked_input):
+        possible_entry_quits = [
+            ['h'],
+            ['a', 'h'],
+            ['a', 'http://www.duckduckgo.com', 'h'],
+            ['a', 'http://www.duckduckgo.com', 'y', 'h']
+        ]
+        for possible_entry_quit in possible_entry_quits:
+            mocked_input.side_effect = possible_entry_quit
+            result = userinput.urls()
+            print(possible_entry_quit)
+            self.assertEqual(result, None)
+
+    @mock.patch('userinput.input', create=True)
+    def test_adtrack_list_quit(self, mocked_input):
+        possible_entry_quits = [
+            ['h'],
+            ['b', 'h']
+        ]
+        for possible_entry_quit in possible_entry_quits:
+            mocked_input.side_effect = possible_entry_quit
+            result = userinput.adtrack_list()
+            print(possible_entry_quit)
+            self.assertEqual(result, None)
