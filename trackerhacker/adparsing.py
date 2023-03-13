@@ -1,5 +1,5 @@
 #import adblock
-import braveblock
+#import braveblock
 from adblockparser import AdblockRules
 
 
@@ -7,7 +7,7 @@ from adblockparser import AdblockRules
 #FILTER_LIST = f.read()
 #f.close()
 
-def parse_fqdns(collected_list, domain_file):
+def parse_fqdns(logger, collected_list, domain_file):
     #filter_set = adblock.FilterSet()
     #filter_set.add_filter_list(FILTER_LIST)
     #engine = adblock.Engine(filter_set=filter_set)
@@ -24,13 +24,13 @@ def parse_fqdns(collected_list, domain_file):
     f.close()
 
     #BraveBlock
-    bblocker = braveblock.Adblocker(
-        rules = raw_rules
-    )
+    #bblocker = braveblock.Adblocker(
+    #    rules = raw_rules
+    #)
         
 
 
-    blockers = ["ad", "ads", "analytic", "tag", "tags", "pixel", "pxl", "px", "pix", "beacon", "metrics", "smetrics", "tracking", "track", "tracker", "sync"]
+    #blockers = ["ad", "ads", "analytic", "tag", "tags", "pixel", "pxl", "px", "pix", "beacon", "metrics", "smetrics", "tracking", "track", "tracker", "sync"]
 
     for u in collected_list:
         
@@ -40,23 +40,23 @@ def parse_fqdns(collected_list, domain_file):
         #print(f"{u} W/o https head:  ", blockresult)
        
         #Manual check for custom params   
-        blockresult = any(sd in blockers for sd in u.split("."))
+        #blockresult = any(sd in blockers for sd in u.split("."))
         
         #Adblockparser engine check against list
-        blockresult = blockresult or rules.should_block("https://" + u) #Only returns correct results for some ads, not all
-        print(f"AdblockParser {u} W/ https head:   ", blockresult)
+        blockresult = rules.should_block(u) #Only returns correct results for some ads, not all
+        print(f"AdblockParser {u}:    ", blockresult)
 
 
 
         #Braveblock
 
-        blockresult = bblocker.check_network_urls(
-                url = u,
-                source_url = "https://www.google.com",
-                request_type = "", #No variation on request type seems to yield results
-        )
+        #blockresult = bblocker.check_network_urls(
+        #        url = u,
+        #        source_url = "https://www.google.com",
+        #        request_type = "", #No variation on request type seems to yield results
+        #)
 
-        print(f"Braveblock {u}:   ", blockresult)
+        #print(f"Braveblock {u}:   ", blockresult)
 
 
         
@@ -68,4 +68,4 @@ def parse_fqdns(collected_list, domain_file):
         #print(blockresult)
 
 
-parse_fqdns(["adservice.google.com", "a2.adform.net/", "www.hostg.xyz/", "c1.adform.net", "2mdn.net"], '/home/hson/Desktop/TrackerHacker/adlists/easylist.txt')
+#parse_fqdns('c', ["adservice.google.com", "a2.adform.net/", "www.hostg.xyz/", "c1.adform.net", "2mdn.net"], '/home/hson/Desktop/TrackerHacker/adlists/easylist.txt')
