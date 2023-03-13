@@ -4,6 +4,7 @@ try:
 
     from trackerhacker import userinput
     from trackerhacker import datacollection
+    from trackerhacker import adparsing
 except ModuleNotFoundError as e:
     print("Required modules could not be imported. To install required libraries, please run:\n\tpip3 install -r requirements.txt")
     exit(1)
@@ -41,6 +42,8 @@ def main() -> None:
     logger.info("Data collection done!")
     
     # 3. separate ad/tracking domains from other domains
+
+    adparsing.parse_fqdns(logger, fqdns, '/home/hson/Desktop/TrackerHacker/adlists/easylist.txt')
 
     # 4. use ad/tracking domain names to get data we want
 
