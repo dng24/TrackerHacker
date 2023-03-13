@@ -32,7 +32,15 @@ def parse_fqdns(logger, collected_list, domain_file):
 
     #blockers = ["ad", "ads", "analytic", "tag", "tags", "pixel", "pxl", "px", "pix", "beacon", "metrics", "smetrics", "tracking", "track", "tracker", "sync"]
 
-    for u in collected_list:
+    for source_url, source_url_info in collected_list.items():
+        for browser, browser_info in source_url_info.items(): 
+
+
+            for fqdn, fqdn_info in browser_info.items():
+                for full_url in fqdn_info:
+
+                    blockresult = rules.should_block(full_url)
+                    print(f"{full_url}:   ", blockresult)
         
         #Adblockparser
 
@@ -43,8 +51,8 @@ def parse_fqdns(logger, collected_list, domain_file):
         #blockresult = any(sd in blockers for sd in u.split("."))
         
         #Adblockparser engine check against list
-        blockresult = rules.should_block(u) #Only returns correct results for some ads, not all
-        print(f"AdblockParser {u}:    ", blockresult)
+        #blockresult = rules.should_block(u) #Only returns correct results for some ads, not all
+        #print(f"AdblockParser {u}:    ", blockresult)
 
 
 
