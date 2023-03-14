@@ -8,6 +8,8 @@ import validators
 import argparse
 
 from trackerhacker.browsermanager import WebBrowsers
+from trackerhacker import TrackerObject
+
 
 def help():
     print("\n\nWelcome to tracker hacker, a convenient tool to show what trackers are spying on you when you visit a webpage. Usage of the tool is easy!\n\nFirst, enter the types of FINISH")
@@ -19,15 +21,17 @@ def get_userinput_cli():
     datapoints = []
     browsers = []
     urls = []
-    adlist_urls = []
+    adlist_path = ""
     parser = argparse.ArgumentParser()
     headless = False
+    default_flag = True
 
     parser.add_argument("-d", "--data", nargs='*', help="Data types to output. 1: Whois, 2: IP geolocation, 3: Owner. For multipe choices, enter them space delimited, eg: -d 1 2 for whois and IP geolocation.", type=int, choices=[1,2,3])
     parser.add_argument("-b", "--browser", nargs='*', help="Which browser to use. 1: Chrome, 2: Firefox, 3: Edge, 4: Brave. For multiple choices, enter them space delimited, eg: 1 2 for Chrome and Firefox", type=int, choices=[1,2,3,4])
     parser.add_argument("-uf", "--urlfile", help="File of URLs to analyze. Provide the path of a .txt file with a list of urls, with only a single url per line.")
     parser.add_argument("-u", "--urls", nargs='*', help="URLs to analyze. Manually type urls to analyze, space delimited.")
-    parser.add_argument("-l", "--list", help="List of ads/trackers. Please either enter \'default\' to use the default list of ads/trackers, or provide the path of a .txt file with a list of custom ad/tracker urls, with only a single url per line.")
+    parser.add_argument("-l", "--list", help="List of ads/trackers. This program by default uses a set of premade ad/tracker lists. If you would like to add a custom ad/tracker list, please provide the path of a .txt file with a list of custom ad/tracker urls, with only a single url per line.")
+    parser.add_argument("-e", "--exclude", help="Use this flag to tell the program to EXCLUDE the default ad/track list referenced during run.", action='store_true')
     parser.add_argument("-hl", "--headless", help="Run program in headless mode. No interface for selenium browser will be launched. Default is non-headless", action='store_true')
     
 
@@ -112,10 +116,10 @@ def get_userinput_cli():
         if pathlib.Path(args.list).suffix != '.txt':
             print("\nOops! Looks like there was a problem loading your urls file. Please make sure that it is a valid path and a correctly formatted .txt file")
         else:
-            f = open(args.list, "r")
-            for ad in f:
-                adlist_urls.append(ad.strip())
-            f.close()
+            adlist_path = args.list
+
+    if args.exclude:
+        default_flag = False
 
     if args.headless:
         headless = True
@@ -125,8 +129,9 @@ def get_userinput_cli():
     #print("Urls", urls)
     #print("Adlist", adlist_urls)
 
+    trackerQuery = TrackerObject.TrackerObject(datapoints, browsers, urls, adlist_path, default_flag, headless)
 
-    return datapoints, browsers, urls, adlist_urls, headless
+    return trackerQuery
 
 def datapoints():
 
@@ -343,88 +348,78 @@ def urls():
 def adtrack_list():
 
     #Default list or manual list entry
-    blocklist_urls = []
-    blocklist_url_input_type = 'a' #Default
+    custom_list = ""
+    default_flag = True
 
     while True:
 
-        print("\nPlease select if you want to supply a custom ad/tracker list or if you would like to use the default list.\n")
-        print("a)    Default list\n")
-        print("b)    Custom list\n")
+        #print("\nPlease select if you want to supply a custom ad/tracker list or if you would like to use the default list.\n")
+        #print("a)    Default list\n")
+        #print("b)    Custom list\n")
 
         try:
-            blocklist_url_input_type = input("\nPlease enter what type of url input you will use:  ")
+            default_choice = input("\nTracker Hacker uses a default ad/tracker list to query your results against. If you would like to use the default list, press any key to continue. If you do not want to use the default list, please enter n/no\n")
         except Exception:
-            print("\nOops! There was a problem with your input, please try again.")
+            print("error")
+            continue
 
-        if (blocklist_url_input_type == "help") or (blocklist_url_input_type == "Help") or (blocklist_url_input_type == 'h'):
+        if (default_choice == "help") or (default_choice == "Help") or (default_choice == 'h'):
             help()
             continue
 
-        if blocklist_url_input_type == 'q':
-            return None
+        if default_choice == 'q':
+            return None, None
 
-        if blocklist_url_input_type == 'a' or blocklist_url_input_type == 'b':
-            break
-        else:
-            print("\nPlease enter a valid input.")
+        if default_choice == 'n' or default_choice == "no":
+            default_flag = False
+
+        break
 
 
-    if blocklist_url_input_type == 'a':
+    while True:
+        if default_flag:
+            try:
+                c_lists = input("\nWould you like to enter a custom ad/tracker list (y or yes, any other key for no):  ")
+            except Exception:
+                print("error")
+                continue
+
+            if (c_lists == "help") or (c_lists == "Help") or (c_lists == 'h'):
+                help()
+                continue
+
+            if c_lists == 'q':
+                return None, None
+
+            if (c_lists == 'y') or (c_lists == "yes"):
+                print("yes")
+            else:
+                break
+
         try:
-            f= open("adlists/default_list.txt", "r")
-            for url in f:
-                blocklist_urls.append(url.strip())
+            filepath = input("\nPlease enter the path to a txt file containing your ad/tracker list:   ")
+            
+            if (filepath == "help") or (filepath == "Help") or (filepath == 'h'):
+                help()
+                continue
+
+            if filepath == 'q':
+                return None, None
+
+            if pathlib.Path(filepath):
+                custom_list = filepath
+            else:
+                raise ValueError
+
         except Exception:
-            print("Oops, looks like something is wrong with the default list file. Please make sure it is in the proper directory and the right format. Aborting program.\n")
-            return
-        f.close()
+            print("error in processing filepath")
+            continue
+            
+        break
         
 
-
-    if blocklist_url_input_type == 'b':
-        while True:
-            try:
-                filepath = input("\nPlease enter the filepath of a txt file containing your list of ad/tracker urls:   ")
-
-                if (filepath == "help") or (filepath == "Help") or (filepath == 'h'):
-                    help()
-                    continue
-
-                if filepath == 'q':
-                    return None
-
-                if pathlib.Path(filepath).suffix != '.txt':
-                    raise ValueError
-
-            except Exception:
-                print("\nOops! Looks like there was a problem referencing the file. Make sure you entered the path correctly and the file is a txt file.")
-                continue
-
-            try:
-                f = open(filepath, "r")
-            except:
-                print("\nOops! Looks like there was a problem referencing the file. Make sure you entered the path correctly and the file is a txt file.")
-                continue
-
-            for url in f:
-                try:
-                    blocklist_urls.append(url.strip())
-                except Exception:
-                    print("Oops, looks like something is wrong with the default list file, and an error occured when processing it. Please make sure it is in the proper directory and the right format.\n")
-                    continue
-            f.close()
-
-            break
-
-    return blocklist_urls
-
-    #print("Datapoints: ", datapoints)
-    #print("Browser: " + str(browser))
-    #print("urls ", urls)
-    #print("blocklist urls", blocklist_urls)
-
-    #print("Starting analysis")
+    return default_flag, custom_list
+    
 
 def headless_run():
     headless = False
@@ -468,8 +463,8 @@ def get_user_input_gui():
     if u is None:
         exit()
 
-    bl = adtrack_list()
-    if bl is None:
+    flag, customlist = adtrack_list()
+    if flag is None or customlist is None: #Check to make sure this actually works, may cause probem with None return 
         exit()
 
     headless = headless_run()
@@ -477,7 +472,9 @@ def get_user_input_gui():
         exit()
 
     # TODO: do we want to allow headless on gui input?
-    return d,b,u,bl,headless
+    trackerQuery = TrackerObject.TrackerObject(d, b, u, customlist, flag, headless)
+
+    return trackerQuery
 
 
 if __name__ == "__main__":
