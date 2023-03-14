@@ -5,6 +5,7 @@ try:
     from trackerhacker import userinput
     from trackerhacker import datacollection
     from trackerhacker import adparsing
+    from trackerhacker import TrackerObject
 except ModuleNotFoundError as e:
     print("Required modules could not be imported. To install required libraries, please run:\n\tpip3 install -r requirements.txt")
     exit(1)
@@ -27,15 +28,15 @@ def main() -> None:
     # Determines what interface to use
     # If user is using command line args, it uses cli run, otherwise it defaults to gui
     if len(sys.argv) > 1:
-        datapoints, browsers, urls, blocklist_urls, headless = userinput.get_userinput_cli()
+        trackerQuery = userinput.get_userinput_cli()
     else:
-        datapoints, browsers, urls, blocklist_urls, headless = userinput.get_user_input_gui()
+        trackerQuery = userinput.get_user_input_gui()
 
     # 2. open urls with selenium and capture traffic with web proxy
     # TODO: add absolute timeout and support for browser paths
-    logger.debug(browsers)
+    logger.debug(trackerQuery.browsers)
     logger.info("Start data collection")
-    fqdns = datacollection.collect_fqdns(logger, urls, browsers, PROXY_IP, PROXY_PORT, REQUEST_TIMEOUT, headless)
+    fqdns = datacollection.collect_fqdns(logger, trackerQuery.query_urls, trackerQuery.browsers, PROXY_IP, PROXY_PORT, REQUEST_TIMEOUT, trackerQuery.headless)
     if fqdns is None:
         exit(1)
 
@@ -43,7 +44,7 @@ def main() -> None:
     
     # 3. separate ad/tracking domains from other domains
 
-    adparsing.parse_fqdns(logger, fqdns, '/home/hson/Desktop/TrackerHacker/adlists/easylist.txt')
+    adparsing.parse_fqdns(logger, fqdns, trackerQuery.adtrack_blocklists, trackerQuery.default)
 
     # 4. use ad/tracking domain names to get data we want
 
