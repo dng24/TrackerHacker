@@ -2,3 +2,5 @@ selenium==4.8.0
 webdriver-manager==3.8.5
 mitmproxy==9.0.1
 validators==0.20.0
+adblockparser==0.7
+re2>=0.2.21

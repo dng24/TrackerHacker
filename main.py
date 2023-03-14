@@ -1,5 +1,6 @@
 try:
     import logging
+    import os
     import sys
 
     from trackerhacker import userinput
@@ -16,6 +17,7 @@ LOGGER_LEVEL = logging.DEBUG
 PROXY_IP = "127.0.0.1"
 PROXY_PORT = 8080
 REQUEST_TIMEOUT = 5
+AD_TRACKER_LISTS_DIR = os.path.join(os.path.dirname(sys.argv[0]), "adlists")
 
 
 def main() -> None:
@@ -36,15 +38,16 @@ def main() -> None:
     # TODO: add absolute timeout and support for browser paths
     logger.debug(trackerQuery.browsers)
     logger.info("Start data collection")
-    fqdns = datacollection.collect_fqdns(logger, trackerQuery.query_urls, trackerQuery.browsers, PROXY_IP, PROXY_PORT, REQUEST_TIMEOUT, trackerQuery.headless)
-    if fqdns is None:
+    request_urls_data = datacollection.collect_request_urls(logger, trackerQuery.query_urls, trackerQuery.browsers, PROXY_IP, PROXY_PORT, REQUEST_TIMEOUT, trackerQuery.headless)
+    if request_urls_data is None:
         exit(1)
 
     logger.info("Data collection done!")
     
     # 3. separate ad/tracking domains from other domains
-
-    adparsing.parse_fqdns(logger, fqdns, trackerQuery.adtrack_blocklists, trackerQuery.default)
+    logger.info("Extracting ad and tracker data")
+    ad_tracker_data = adparsing.extract_ads_and_trackers(logger, AD_TRACKER_LISTS_DIR, request_urls_data)
+    logger.info("Ads and trackers extracted!")
 
     # 4. use ad/tracking domain names to get data we want
 

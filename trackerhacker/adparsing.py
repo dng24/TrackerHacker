@@ -1,70 +1,59 @@
+import os
+
 from adblockparser import AdblockRules
 
 
-
-def parse_fqdns(logger, collected_list, adtrack_path, default_flag):
-    #filter_set = adblock.FilterSet()
-    #filter_set.add_filter_list(FILTER_LIST)
-    #engine = adblock.Engine(filter_set=filter_set)
-
+def _get_ad_tracker_rules(ad_tracker_lists_dir: str) -> list:
     raw_rules = []
-    default_adtrack_lists = ['adlists/default_list.txt']
+    for filename in os.listdir(ad_tracker_lists_dir):
+        filepath = os.path.join(ad_tracker_lists_dir, filename)
+        if os.path.isfile(filepath):
+            #TODO: err handling
+            with open(filepath, "r") as f:
+                raw_rules.extend(f.readlines())
 
-    if default_flag:
+    return raw_rules
 
-    #Default AdBlockRules
-        for lst in default_adtrack_lists:
-            print(f"this is the list: {lst}")
-            try:
-                f = open(lst, 'r')
 
-                tmp = f.readlines()
-                raw_rules.extend(tmp)
-                f.close()
-            except:
-                print("problem referencing a default file")
-                continue
+def extract_ads_and_trackers(logger, ad_tracker_lists_dir: str, collected_request_urls: dict) -> dict:
+    results = {}
+    raw_rules = _get_ad_tracker_rules(ad_tracker_lists_dir)
 
-    print(f"this is the custom list path {adtrack_path}")
-
-    if adtrack_path != "":
-        try:
-            f = open(adtrack_path, 'r')
-
-            tmp = f.readlines()
-            raw_rules.extend(tmp)
-            f.close()
-        except:
-            print("problem opening custom adtracklist file")
-
-    
     #Creates engine instance
     rules = AdblockRules(raw_rules)
 
-
-    #try:
-    #    cf = open(filepath, "r")
-    #except:
-    #    print("\nOops! Looks like there was a problem referencing the file. Make sure you entered the path correctly and the file is a txt file.")
-            
-    #for url in cf:
-    #    try:
-    #        custom_blocklist.append(url.strip())
-    #    except Exception:
-    #        print("Oops, looks like something is wrong with the default list file, and an error occured when processing it. Please make sure it is in the proper directory and the right format.\n")
-
-    #custom_raw_rules= AdblockRules(custom_blocklist)
-    #cf.close()
-
-    #blockers = ["ad", "ads", "analytic", "tag", "tags", "pixel", "pxl", "px", "pix", "beacon", "metrics", "smetrics", "tracking", "track", "tracker", "sync"]
-
-    for source_url, source_url_info in collected_list.items():
-        for browser, browser_info in source_url_info.items(): 
-
-
+    num_ads = 0
+    tot = 0
+    for source_url, source_url_info in collected_request_urls.items():
+        options = {"third-party": True, "domain": source_url}
+        for browser, browser_info in source_url_info.items():
             for fqdn, fqdn_info in browser_info.items():
-                for full_url in fqdn_info:
+                for full_url in list(fqdn_info):
+                    #TODO: performance improvements
+                    blockresult = rules.should_block(full_url, options)
+                    print(blockresult, f"{full_url}")
+                    tot += 1
+                    if blockresult:
+                        num_ads += 1
+                    if not blockresult:
+                        del fqdn_info[full_url]
 
-                    blockresult = rules.should_block(full_url)
-                    print(f"{full_url}:   ", blockresult)
-        
+                browser_info[fqdn] = {i: k for i, k in fqdn_info.items() if k}
+
+            source_url_info[browser] = {i: k for i, k in browser_info.items() if k}
+
+        collected_request_urls[source_url] = {i: k for i, k in source_url_info.items() if k}
+
+    collected_request_urls = {i: k for i, k in collected_request_urls.items() if k}
+
+    print(num_ads, tot)
+    print(collected_request_urls)
+    return collected_request_urls
+
+
+if __name__ == "__main__":
+    import json
+    with open("../out_cnn.json", "r") as f:
+        asdf = json.load(f)
+
+    extract_ads_and_trackers('c', asdf)
