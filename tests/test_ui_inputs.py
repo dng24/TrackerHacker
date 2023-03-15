@@ -1,4 +1,7 @@
 import sys
+import io
+import os
+import re
 sys.path.insert(0, r'C:\Users\treba\Documents\GitHub\TrackerHacker\trackerhacker')
 import userinput
 from unittest import mock
@@ -54,34 +57,38 @@ class TestUIInputs(TestCase):
             self.assertEqual(result, None)
 
     @mock.patch('userinput.input', create=True)
-    def test_datapoints_quit(self, mocked_input):
+    def test_datapoints_help(self, mocked_input):
         possible_entry_quits = [
-            ['h'],
-            ['a', 'h'],
-            ['a', 'y', 'b', 'h']
+            ['h', 'q'],
+            ['a', 'h', 'q'],
+            ['a', 'y', 'b', 'h', 'q']
         ]
         for possible_entry_quit in possible_entry_quits:
             mocked_input.side_effect = possible_entry_quit
             result = userinput.datapoints()
             self.assertEqual(result, None)
 
+    @mock.patch('sys.stdout', new_callable=io.StringIO)
     @mock.patch('userinput.input', create=True)
-    def test_browser_choice_quit(self, mocked_input):
+    def test_browser_choice_help(self, mocked_input, mock_stdout):
         possible_entry_quits = [
-            ['h']
+            ['h', 'q']
         ]
         for possible_entry_quit in possible_entry_quits:
             mocked_input.side_effect = possible_entry_quit
             result = userinput.browser_choice()
-            self.assertEqual(result, None)
+            getvalue_result = mock_stdout.getvalue()
+            getvalue_result = repr(getvalue_result)
+            #sys.stdout = sys.__stdout__
+            self.assertRegex(getvalue_result, r".*Welcome to hacker tracker, a convenient tool.*")
 
     @mock.patch('userinput.input', create=True)
-    def test_urls_quit(self, mocked_input):
+    def test_urls_help(self, mocked_input):
         possible_entry_quits = [
-            ['h'],
-            ['a', 'h'],
-            ['a', 'http://www.duckduckgo.com', 'h'],
-            ['a', 'http://www.duckduckgo.com', 'y', 'h']
+            ['h', 'q'],
+            ['a', 'h', 'q'],
+            ['a', 'http://www.duckduckgo.com', 'h', 'q'],
+            ['a', 'http://www.duckduckgo.com', 'y', 'h', 'q']
         ]
         for possible_entry_quit in possible_entry_quits:
             mocked_input.side_effect = possible_entry_quit
@@ -90,10 +97,10 @@ class TestUIInputs(TestCase):
             self.assertEqual(result, None)
 
     @mock.patch('userinput.input', create=True)
-    def test_adtrack_list_quit(self, mocked_input):
+    def test_adtrack_list_help(self, mocked_input):
         possible_entry_quits = [
-            ['h'],
-            ['b', 'h']
+            ['h', 'q'],
+            ['b', 'h', 'q']
         ]
         for possible_entry_quit in possible_entry_quits:
             mocked_input.side_effect = possible_entry_quit
