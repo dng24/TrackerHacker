@@ -10,11 +10,20 @@ import argparse
 from trackerhacker.browsermanager import WebBrowsers
 from trackerhacker import TrackerObject
 
+def check_adlists(adlists_dir):
+    dir = os.listdir(adlists_dir)
+    if len(dir) == 0:
+        print("There was a problem with referencing files in the adlists dir. Please make sure the directory is not empty.")
+    else:
+        x = len(dir)
+        print(f"Num files: {x}")
+        return 1
+    return None
 
 def help():
     print("\n\nWelcome to tracker hacker, a convenient tool to show what trackers are spying on you when you visit a webpage. Usage of the tool is easy!\n\nFirst, enter the types of FINISH")
 
-def get_userinput_cli():
+def get_userinput_cli(adlists_dir):
     print("args")
     
 
@@ -30,8 +39,8 @@ def get_userinput_cli():
     parser.add_argument("-b", "--browser", nargs='*', help="Which browser to use. 1: Chrome, 2: Firefox, 3: Edge, 4: Brave. For multiple choices, enter them space delimited, eg: 1 2 for Chrome and Firefox", type=int, choices=[1,2,3,4])
     parser.add_argument("-uf", "--urlfile", help="File of URLs to analyze. Provide the path of a .txt file with a list of urls, with only a single url per line.")
     parser.add_argument("-u", "--urls", nargs='*', help="URLs to analyze. Manually type urls to analyze, space delimited.")
-    parser.add_argument("-l", "--list", help="List of ads/trackers. This program by default uses a set of premade ad/tracker lists. If you would like to add a custom ad/tracker list, please provide the path of a .txt file with a list of custom ad/tracker urls, with only a single url per line.")
-    parser.add_argument("-e", "--exclude", help="Use this flag to tell the program to EXCLUDE the default ad/track list referenced during run.", action='store_true')
+    #parser.add_argument("-l", "--list", help="List of ads/trackers. This program by default uses a set of premade ad/tracker lists. If you would like to add a custom ad/tracker list, please provide the path of a .txt file with a list of custom ad/tracker urls, with only a single url per line.")
+    #parser.add_argument("-e", "--exclude", help="Use this flag to tell the program to EXCLUDE the default ad/track list referenced during run.", action='store_true')
     parser.add_argument("-hl", "--headless", help="Run program in headless mode. No interface for selenium browser will be launched. Default is non-headless", action='store_true')
     
 
@@ -112,24 +121,28 @@ def get_userinput_cli():
 
         print("\n{} Malformed urls included in your file. Added {} valid urls, continuing...\n".format(malformed, count))
 
-    if args.list:
-        if pathlib.Path(args.list).suffix != '.txt':
-            print("\nOops! Looks like there was a problem loading your urls file. Please make sure that it is a valid path and a correctly formatted .txt file")
-        else:
-            adlist_path = args.list
+    #if args.list:
+    #    if pathlib.Path(args.list).suffix != '.txt':
+    #        print("\nOops! Looks like there was a problem loading your urls file. Please make sure that it is a valid path and a correctly formatted .txt file")
+    #    else:
+    #        adlist_path = args.list
 
-    if args.exclude:
-        default_flag = False
+    #if args.exclude:
+    #    default_flag = False
 
     if args.headless:
         headless = True
+
+
+    if check_adlists(adlists_dir) == None:
+        exit()
 
     #print("Choices", datapoints)
     #print("Browsers", browsers)
     #print("Urls", urls)
     #print("Adlist", adlist_urls)
 
-    trackerQuery = TrackerObject.TrackerObject(datapoints, browsers, urls, adlist_path, default_flag, headless)
+    trackerQuery = TrackerObject.TrackerObject(datapoints, browsers, urls, headless)
 
     return trackerQuery
 
@@ -446,7 +459,10 @@ def headless_run():
 
     return headless
 
-def get_user_input_gui():
+
+
+
+def get_user_input_gui(adlists_dir):
 
     print("Welcome to tracker hacker!\n")
     print("To begin, select your datapoints and url inputs. (Type help for manual, q to quit)\n")
@@ -463,16 +479,20 @@ def get_user_input_gui():
     if u is None:
         exit()
 
-    flag, customlist = adtrack_list()
-    if flag is None or customlist is None: #Check to make sure this actually works, may cause probem with None return 
+    #flag, customlist = adtrack_list()
+    #if flag is None or customlist is None:  
+    #    exit()
+
+    if check_adlists(adlists_dir) == None:
         exit()
+    
 
     headless = headless_run()
     if headless is None:
         exit()
 
     # TODO: do we want to allow headless on gui input?
-    trackerQuery = TrackerObject.TrackerObject(d, b, u, customlist, flag, headless)
+    trackerQuery = TrackerObject.TrackerObject(d, b, u, headless)
 
     return trackerQuery
 

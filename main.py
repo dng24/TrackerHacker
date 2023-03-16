@@ -30,9 +30,9 @@ def main() -> None:
     # Determines what interface to use
     # If user is using command line args, it uses cli run, otherwise it defaults to gui
     if len(sys.argv) > 1:
-        trackerQuery = userinput.get_userinput_cli()
+        trackerQuery = userinput.get_userinput_cli(AD_TRACKER_LISTS_DIR)
     else:
-        trackerQuery = userinput.get_user_input_gui()
+        trackerQuery = userinput.get_user_input_gui(AD_TRACKER_LISTS_DIR)
 
     # 2. open urls with selenium and capture traffic with web proxy
     # TODO: add absolute timeout and support for browser paths
