@@ -63,7 +63,7 @@ def collect_request_urls(logger, urls: list, browsers: list, proxy_ip: str="127.
             except selenium.common.exceptions.WebDriverException:
                 pass
 
-            logger.debug("RESULTS: %s" % proxy.get_fqdns())
+            logger.debug("DATA COLLECTION RESULTS: %s" % proxy.get_fqdns())
             results[url][str(browser)] = proxy.get_fqdns()
 
     logger.debug("shutting down proxy")

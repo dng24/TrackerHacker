@@ -47,6 +47,9 @@ def main() -> None:
     # 3. separate ad/tracking domains from other domains
     logger.info("Extracting ad and tracker data")
     ad_tracker_data = adparsing.extract_ads_and_trackers(logger, AD_TRACKER_LISTS_DIR, request_urls_data)
+    if len(ad_tracker_data) == 0:
+        exit(1)
+
     logger.info("Ads and trackers extracted!")
 
     # 4. use ad/tracking domain names to get data we want
