@@ -1,21 +1,66 @@
+import sys
+sys.path.insert(0, r'../trackerhacker')
 from unittest import mock
 from unittest import TestCase
 from browsermanager import WebBrowsers
 import datacollection
+import logging
+
+logger = logging.getLogger('tracker_hacker')
 
 class TestBrowsers(TestCase):
     def test_chrome(self):
-        result = datacollection.collect_fqdns(['http://www.duckduckgo.com'], [WebBrowsers.CHROME])
-        self.assertEqual(result, 0)
+        urls = [
+            'http://www.duckduckgo.com',
+            'http://www.google.com',
+            'http://www.cnn.com'
+        ]
+        for url in urls:
+            result = datacollection.collect_request_urls(logger, [url], [WebBrowsers.CHROME])
+            self.assertEqual(type(result), dict)
+            self.assertTrue(url in result)
+            self.assertEqual(type(result[url]), dict)
+            self.assertTrue('WebBrowsers.CHROME' in result[url])
+            self.assertTrue(len(result[url]['WebBrowsers.CHROME']) > 0)
 
     def test_firefox(self):
-        result = datacollection.collect_fqdns(['http://www.duckduckgo.com'], [WebBrowsers.FIREFOX])
-        self.assertEqual(result, 0)
+        urls = [
+            'http://www.duckduckgo.com',
+            'http://www.google.com',
+            'http://www.cnn.com'
+        ]
+        for url in urls:
+            result = datacollection.collect_request_urls(logger, [url], [WebBrowsers.FIREFOX])
+            self.assertEqual(type(result), dict)
+            self.assertTrue(url in result)
+            self.assertEqual(type(result[url]), dict)
+            self.assertTrue('WebBrowsers.FIREFOX' in result[url])
+            self.assertTrue(len(result[url]['WebBrowsers.FIREFOX']) > 0)
 
     def test_edge(self):
-        result = datacollection.collect_fqdns(['http://www.duckduckgo.com'], [WebBrowsers.EDGE])
-        self.assertEqual(result, 0)
+        urls = [
+            'http://www.duckduckgo.com',
+            'http://www.google.com',
+            'http://www.cnn.com'
+        ]
+        for url in urls:
+            result = datacollection.collect_request_urls(logger, [url], [WebBrowsers.EDGE])
+            self.assertEqual(type(result), dict)
+            self.assertTrue(url in result)
+            self.assertEqual(type(result[url]), dict)
+            self.assertTrue('WebBrowsers.EDGE' in result[url])
+            self.assertTrue(len(result[url]['WebBrowsers.EDGE']) > 0)
     
     def test_brave(self):
-        result = datacollection.collect_fqdns(['http://www.duckduckgo.com'], [WebBrowsers.BRAVE])
-        self.assertEqual(result, 0)
+        urls = [
+            'http://www.duckduckgo.com',
+            'http://www.google.com',
+            'http://www.cnn.com'
+        ]
+        for url in urls:
+            result = datacollection.collect_request_urls(logger, [url], [WebBrowsers.BRAVE])
+            self.assertEqual(type(result), dict)
+            self.assertTrue(url in result)
+            self.assertEqual(type(result[url]), dict)
+            self.assertTrue('WebBrowsers.BRAVE' in result[url])
+            self.assertTrue(len(result[url]['WebBrowsers.BRAVE']) > 0)

@@ -1,8 +1,8 @@
 import sys
+sys.path.insert(0, r'../trackerhacker')
 import io
 import os
 import re
-sys.path.insert(0, r'C:\Users\treba\Documents\GitHub\TrackerHacker\trackerhacker')
 import userinput
 from unittest import mock
 from unittest import TestCase
@@ -110,11 +110,9 @@ class TestUIHelpQuitJunk(TestCase):
             getvalue_result = mock_stdout.getvalue()
             self.assertTrue("Welcome to tracker hacker, a convenient tool" in getvalue_result)
 
-    #@skip("temp")
     @mock.patch('sys.stdout', new_callable=io.StringIO)
     @mock.patch('userinput.input', create=True)
     def test_datapoints_junk(self, mocked_input, mock_stdout):
-        #TODO test for all possible entry points
         possible_junk_inputs = [
             ['u', 'q'],
             ['1', 'q'],
@@ -137,7 +135,6 @@ class TestUIHelpQuitJunk(TestCase):
     @mock.patch('sys.stdout', new_callable=io.StringIO)
     @mock.patch('userinput.input', create=True)
     def test_browser_choice_junk(self, mocked_input, mock_stdout):
-        #TODO test for all possible entry points
         possible_junk_inputs = [
             ['u', 'q'],
             ['1', 'q'],
@@ -161,7 +158,6 @@ class TestUIHelpQuitJunk(TestCase):
     @mock.patch('sys.stdout', new_callable=io.StringIO)
     @mock.patch('userinput.input', create=True)
     def test_urls_junk(self, mocked_input, mock_stdout):
-        #TODO test for all possible entry points
         possible_junk_inputs = [
             ['u', 'q'],
             ['1', 'q'],
@@ -185,7 +181,6 @@ class TestUIHelpQuitJunk(TestCase):
     @mock.patch('sys.stdout', new_callable=io.StringIO)
     @mock.patch('userinput.input', create=True)
     def test_adtrack_list_junk(self, mocked_input, mock_stdout):
-        #TODO test for all possible entry points
         possible_junk_inputs = [
             ['u', 'q'],
             ['1', 'q'],
