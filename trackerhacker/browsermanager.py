@@ -103,6 +103,6 @@ class WebDrivers:
 
                 driver = webdriver.Chrome(service=ChromiumService(self.driver_paths[WebBrowsers.BRAVE]), chrome_options=opts)
         except selenium.common.exceptions.WebDriverException:
-            self._logger.error("Unable to open %s. Make sure:\n\t- You are connected to the Internet\n\t- %s is installed\n\t- %s is updated\nAlternatively, try passing in the path to %s." % (browser.value, browser.value, browser.value))
+            self._logger.error("Unable to open %s. Make sure:\n\t- You are connected to the Internet\n\t- %s is installed\n\t- %s is updated\nAlternatively, try passing in the path to %s." % (browser.value, browser.value, browser.value, browser.value))
 
         return driver

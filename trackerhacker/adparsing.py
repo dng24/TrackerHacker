@@ -14,7 +14,7 @@ def _get_ad_tracker_rules(logger, ad_tracker_lists_dir: str) -> list:
                 except PermissionError:
                     logger.warning("Permission denied: '%s'. Please check that the file has read permission. Skipping....." % filepath)
                 except Exception as e:
-                    logger.warning("%s. Skipping....." % str(e))
+                    logger.warning("%s: %s. Skipping....." % (filepath, str(e)))
 
         if len(raw_rules) == 0:
             logger.error("No ad rules read. Please check that there are ad rules in .txt files in '%s' and that '%s' has read and execute permissions." % (ad_tracker_lists_dir, ad_tracker_lists_dir))

@@ -39,7 +39,7 @@ def main() -> None:
     logger.debug(trackerQuery.browsers)
     logger.info("Start data collection")
     request_urls_data = datacollection.collect_request_urls(logger, trackerQuery.query_urls, trackerQuery.browsers, PROXY_IP, PROXY_PORT, REQUEST_TIMEOUT, trackerQuery.headless)
-    if request_urls_data is None:
+    if len(request_urls_data) == 0:
         exit(1)
 
     logger.info("Data collection done!")

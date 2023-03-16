@@ -32,10 +32,12 @@ def collect_request_urls(logger, urls: list, browsers: list, proxy_ip: str="127.
     t = threading.Thread(target=_start_proxy_launcher, args=(proxy, proxy_ip, proxy_port))
     t.start()
 
+    total_urls = num_urls_left = len(urls) * len(browsers)
     for url in urls:
         results[url] = {}
         for browser in browsers:
-            logger.info("Launching %s to open %s" % (browser.value, url))
+            logger.info("Launching %s to open %s [%d/%d]" % (browser.value, url, num_urls_left, total_urls))
+            num_urls_left -= 1
             driver = webdrivers.get_driver(browser, proxy_ip=proxy_ip, proxy_port=proxy_port, headless=headless)
             if driver is None:
                 continue
@@ -63,11 +65,20 @@ def collect_request_urls(logger, urls: list, browsers: list, proxy_ip: str="127.
             except selenium.common.exceptions.WebDriverException:
                 pass
 
-            logger.debug("DATA COLLECTION RESULTS: %s" % proxy.get_fqdns())
-            results[url][str(browser)] = proxy.get_fqdns()
+            fqdns = proxy.get_fqdns()
+            if len(fqdns) == 0:
+                logger.warning("'%s' on %s had no requests. Excluding from results....." % (url, browser.value))
+            else:
+                results[url][browser.value] = fqdns
+
+        if len(results[url]) == 0:
+            logger.warning("'%'s had no requests. Excluding from results....." % url)
+            del results[url]
+
 
     logger.debug("shutting down proxy")
     proxy.shutdown_proxy()
+    logger.debug("DATA COLLECTION RESULTS: %s" % results)
     return results
 
 
