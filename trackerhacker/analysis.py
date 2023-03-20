@@ -11,6 +11,24 @@ class Analysis:
                 for fqdn, fqdn_info in browser_info.items():
                     self.results[source_url][browser][fqdn] = {}
 
+    def get_dns(url):
+        url_ips = []
+        answers = dns.resolver.resolve(url, 'A')
+        for a in answers:
+            url_ips.append(str(a))
+
+        return url_ips
+
+    def geolocate(urls):
+        for ip in urls:
+            request_url = 'https://geolocation-db.com/jsonp/' + ip
+            response = requests.get(request_url)
+            result = response.content.decode()
+            result = result.split("(")[1].strip(")")
+            result  = json.loads(result)
+            print(f"Geolocation for {ip}: \n\n  {result}")
+
+
 
     def get_results(self) -> dict:
         return self.results
