@@ -1,4 +1,6 @@
-
+import whois
+import requests
+import json
 
 class Analysis:
     def __init__(self, logger, ad_tracker_data_dict: dict) -> None:
@@ -28,6 +30,10 @@ class Analysis:
             result  = json.loads(result)
             print(f"Geolocation for {ip}: \n\n  {result}")
 
+    def whoisQuery(urls):
+        for u in urls:
+            domain = whois.whois(u)
+            print(domain)
 
 
     def get_results(self) -> dict:
