@@ -6,6 +6,7 @@ try:
     from trackerhacker import userinput
     from trackerhacker import datacollection
     from trackerhacker import adparsing
+    from trackerhacker import analysis
     from trackerhacker import TrackerObject
 except ModuleNotFoundError as e:
     print("Required modules could not be imported. To install required libraries, please run:\n\tpip3 install -r requirements.txt")
@@ -30,15 +31,15 @@ def main() -> None:
     # Determines what interface to use
     # If user is using command line args, it uses cli run, otherwise it defaults to gui
     if len(sys.argv) > 1:
-        trackerQuery = userinput.get_userinput_cli(AD_TRACKER_LISTS_DIR)
+        tracker_query = userinput.get_userinput_cli(AD_TRACKER_LISTS_DIR)
     else:
-        trackerQuery = userinput.get_user_input_gui(AD_TRACKER_LISTS_DIR)
+        tracker_query = userinput.get_user_input_gui(AD_TRACKER_LISTS_DIR)
 
     # 2. open urls with selenium and capture traffic with web proxy
     # TODO: add absolute timeout and support for browser paths
-    logger.debug(trackerQuery.browsers)
+    logger.debug(tracker_query.browsers)
     logger.info("Start data collection")
-    request_urls_data = datacollection.collect_request_urls(logger, trackerQuery.query_urls, trackerQuery.browsers, PROXY_IP, PROXY_PORT, REQUEST_TIMEOUT, trackerQuery.headless)
+    request_urls_data = datacollection.collect_request_urls(logger, tracker_query.query_urls, tracker_query.browsers, PROXY_IP, PROXY_PORT, REQUEST_TIMEOUT, tracker_query.headless)
     if len(request_urls_data) == 0:
         exit(1)
 
@@ -53,6 +54,13 @@ def main() -> None:
     logger.info("Ads and trackers extracted!")
 
     # 4. use ad/tracking domain names to get data we want
+    analysis_query = analysis.Analysis(logger, ad_tracker_data)
+    analysis_query.do_whois_analysis()
+    analysis_query.do_server_location_analysis()
+
+    analysis_results = analysis_query.get_results()
+    print(analysis_results)
+
 
     # 5. make visualizations/reports
 

@@ -3,3 +3,5 @@ webdriver-manager==3.8.5
 mitmproxy==9.0.1
 validators==0.20.0
 braveblock==0.5.0
+dnspython==2.3.0
+python-whois==0.8.0
