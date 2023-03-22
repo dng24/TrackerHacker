@@ -58,10 +58,3 @@ class Analysis:
             results.append(result)
 
         return results
-
-if __name__ == "__main__":
-    with open("test.json", "r") as f:
-        stuff = json.loads(f.read())
-    a = Analysis("c", stuff)
-    a.do_server_location_analysis()
-    print(a.get_results)

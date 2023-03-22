@@ -78,6 +78,12 @@ def collect_request_urls(logger, urls: list, browsers: list, proxy_ip: str="127.
 
     logger.debug("shutting down proxy")
     proxy.shutdown_proxy()
+    os.environ["http_proxy"] = ""
+    os.environ["https_proxy"] = ""
+    os.environ["no_proxy"] = ""
+    os.environ["HTTP_PROXY"] = ""
+    os.environ["HTTPS_PROXY"] = ""
+    os.environ["NO_PROXY"] = ""
     logger.debug("DATA COLLECTION RESULTS: %s" % results)
     return results
 
