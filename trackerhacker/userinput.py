@@ -35,7 +35,7 @@ def get_userinput_cli(adlists_dir):
     headless = False
     default_flag = True
 
-    parser.add_argument("-d", "--data", nargs='*', help="Data types to output. 1: Whois, 2: IP geolocation, 3: Owner. For multipe choices, enter them space delimited, eg: -d 1 2 for whois and IP geolocation.", type=int, choices=[1,2,3])
+    parser.add_argument("-d", "--data", nargs='*', help="Data types to output. a: Whois, b: IP geolocation, c: Owner. For multipe choices, enter them space delimited, eg: -d a b for whois and IP geolocation.", type=str, choices=['a','b','c'])
     parser.add_argument("-b", "--browser", nargs='*', help="Which browser to use. 1: Chrome, 2: Firefox, 3: Edge, 4: Brave. For multiple choices, enter them space delimited, eg: 1 2 for Chrome and Firefox", type=int, choices=[1,2,3,4])
     parser.add_argument("-uf", "--urlfile", help="File of URLs to analyze. Provide the path of a .txt file with a list of urls, with only a single url per line.")
     parser.add_argument("-u", "--urls", nargs='*', help="URLs to analyze. Manually type urls to analyze, space delimited.")
@@ -48,16 +48,14 @@ def get_userinput_cli(adlists_dir):
     args = parser.parse_args()
     
     if args.data:
-        count = 0
-        print("URL Args:", args.data)
-        datapoints = args.data
         for choice in args.data:
-            if choice == 1 or choice == 2 or choice == 3:
+            if choice in datapoints:
                 continue
-            else:
-                datapoints.remove(choice)
+            datapoints.append(choice)
     else:
-        datapoints = [1,2,3]
+        datapoints = ['a','b','c'] #Gui outputs chars, in order to make it more streamlined, num choices are converted 
+            
+    
 
     if args.browser:
         count = 0
@@ -219,22 +217,33 @@ def browser_choice():
             print("\nOops! Something went wrong with your input. Please try again")
             continue
 
+
         if browser_choice == 'a':
             browser.append(WebBrowsers.CHROME)
-            break
         elif browser_choice == 'b':
             browser.append(WebBrowsers.FIREFOX)
-            break
         elif browser_choice == 'c':
             browser.append(WebBrowsers.EDGE)
-            break
         elif browser_choice == 'd':
             browser.append(WebBrowsers.BRAVE)
-            break
         else:
             print("\nPlease enter a valid choice for browser")
             continue
-    
+
+        if len(browser) != 4:
+            c = input("\nWould you like to select another browser? (y or any other key):")
+
+            if c == 'y':
+                continue
+            if c == 'q':
+                return None
+            else:
+                break
+        else:
+            break
+
+
+
     return browser
 
 
