@@ -7,8 +7,32 @@ import pathlib
 import validators
 import argparse
 
+from enum import Enum
+
 from trackerhacker.browsermanager import WebBrowsers
 from trackerhacker import TrackerObject
+
+class DataChoices(Enum):
+    SERVER_LOCATION = "server_location"
+    DOMAIN_NAME = "whois:domain_name"
+    REGISTRAR = "whois:registrar"
+    WHOIS_SERVER = "whois:whois_server"
+    REFERRAL_URL = "whois:referral_url"
+    UPDATED_DATE = "whois:updated_date"
+    CREATION_DATE = "whois:creation_date"
+    EXPIRATION_DATE = "whois:expiration_date"
+    NAME_SERVERS = "whois:name_servers"
+    STATUS = "whois:status"
+    EMAILS = "whois:emails"
+    DNSSEC = "whois:dnssec"
+    NAME = "whois:name"
+    ORG = "whois:org"
+    ADDRESS = "whois:address"
+    WHOIS_CITY = "whois:city"
+    WHOIS_STATE = "whois:state"
+    WHOIS_REGISTRANT_POSTAL_CODE = "whois:registrant_postal_code"
+    WHOIS_COUNTRY = "whois:country"
+    
 
 def check_adlists(adlists_dir):
     dir = os.listdir(adlists_dir)
