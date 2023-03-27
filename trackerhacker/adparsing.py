@@ -31,7 +31,6 @@ def _get_ad_tracker_rules(logger, ad_tracker_lists_dir: str) -> list:
 
 
 def extract_ads_and_trackers(logger, ad_tracker_lists_dir: str, collected_request_urls: dict) -> dict:
-    results = {}
     raw_rules = _get_ad_tracker_rules(logger, ad_tracker_lists_dir)
     if len(raw_rules) == 0:
         return {}

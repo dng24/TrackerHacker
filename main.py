@@ -7,7 +7,7 @@ try:
     from trackerhacker import datacollection
     from trackerhacker import adparsing
     from trackerhacker import analysis
-    from trackerhacker import TrackerObject
+    from trackerhacker import output
 except ModuleNotFoundError as e:
     print("Required modules could not be imported. To install required libraries, please run:\n\tpip3 install -r requirements.txt")
     exit(1)
@@ -54,17 +54,24 @@ def main() -> None:
     logger.info("Ads and trackers extracted!")
 
     # 4. use ad/tracking domain names to get data we want
+    logger.info("Analyzing data")
     analysis_query = analysis.Analysis(logger, ad_tracker_data)
+    #TODO opmitize by not running unnecessary analyses
     analysis_query.do_whois_analysis()
     analysis_query.do_server_location_analysis()
 
     analysis_results = analysis_query.get_results()
     print(analysis_results)
-
+    logger.info("Data analyzed!")
 
     # 5. make visualizations/reports
+    output_generator = output.Output(logger, analysis_results, tracker_query.datapoints, "out")
+    output_generator.make_csv_output()
+
     
-
-
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        # don't print out stack trace on CTRL+C exit
+        pass

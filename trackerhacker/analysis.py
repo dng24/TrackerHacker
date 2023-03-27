@@ -12,7 +12,8 @@ class Analysis:
             for browser, browser_info in source_url_info.items():
                 self.results[source_url][browser] = {}
                 for fqdn, fqdn_info in browser_info.items():
-                    self.results[source_url][browser][fqdn] = {"ips": self._get_ips(fqdn)}
+                    total_ad_tracker_requests = sum(fqdn_info.values())
+                    self.results[source_url][browser][fqdn] = {"ips": self._get_ips(fqdn), "ad_tracker_count": total_ad_tracker_requests}
 
 
     def _get_ips(self, fqdn: str) -> list:
@@ -31,15 +32,14 @@ class Analysis:
     def do_whois_analysis(self) -> None:
         for source_url, source_url_info in self.results.items():
             for browser, browser_info in source_url_info.items():
-                for fqdn, fqdn_info in browser_info.items():
-                    whois_results = None
+                for fqdn, _ in browser_info.items():
                     self.results[source_url][browser][fqdn]["whois"] = whois.whois(fqdn)
                     
 
     def do_server_location_analysis(self) -> None:
         for source_url, source_url_info in self.results.items():
             for browser, browser_info in source_url_info.items():
-                for fqdn, fqdn_info in browser_info.items():
+                for fqdn, _ in browser_info.items():
                     server_location_results = self._geolocate(self.results[source_url][browser][fqdn]["ips"])
                     self.results[source_url][browser][fqdn]["server_location"] = server_location_results
 

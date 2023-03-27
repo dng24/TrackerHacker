@@ -11,28 +11,9 @@ from enum import Enum
 
 from trackerhacker.browsermanager import WebBrowsers
 from trackerhacker import TrackerObject
+from trackerhacker.TrackerObject import DataChoices
 
-class DataChoices(Enum):
-    SERVER_LOCATION = "server_location"
-    DOMAIN_NAME = "whois:domain_name"
-    REGISTRAR = "whois:registrar"
-    WHOIS_SERVER = "whois:whois_server"
-    REFERRAL_URL = "whois:referral_url"
-    UPDATED_DATE = "whois:updated_date"
-    CREATION_DATE = "whois:creation_date"
-    EXPIRATION_DATE = "whois:expiration_date"
-    NAME_SERVERS = "whois:name_servers"
-    STATUS = "whois:status"
-    EMAILS = "whois:emails"
-    DNSSEC = "whois:dnssec"
-    NAME = "whois:name"
-    ORG = "whois:org"
-    ADDRESS = "whois:address"
-    WHOIS_CITY = "whois:city"
-    WHOIS_STATE = "whois:state"
-    WHOIS_REGISTRANT_POSTAL_CODE = "whois:registrant_postal_code"
-    WHOIS_COUNTRY = "whois:country"
-    
+DATA_CHOICES_MAPPING = { str(index): data_choice for index, data_choice in enumerate(DataChoices) }
 
 def check_adlists(adlists_dir):
     dir = os.listdir(adlists_dir)
@@ -67,7 +48,7 @@ def get_userinput_cli(adlists_dir):
     #parser.add_argument("-e", "--exclude", help="Use this flag to tell the program to EXCLUDE the default ad/track list referenced during run.", action='store_true')
     parser.add_argument("-hl", "--headless", help="Run program in headless mode. No interface for selenium browser will be launched. Default is non-headless", action='store_true')
     
-
+    #TODO add arg for output directory
 
     args = parser.parse_args()
     
@@ -173,6 +154,7 @@ def datapoints():
     #Desired data points
     datapoints = []
     while True:
+        #TODO fix user input text to match actual input
         print("\nPlease select what data points you want tracker hacker to ouptut:\n")
         print("a)    Whois\n")
         print("b)    IP geolocation\n")
@@ -191,15 +173,17 @@ def datapoints():
         except Exception:
             print("\nOops, something went wrong with your input. Please try again")
             continue
-        
-        if (data_choice == 'a' or data_choice == 'b' or data_choice == 'c'):
-            if data_choice not in datapoints:
-                datapoints.append(data_choice)
-            else:
-                print("\nPlease enter a choice that you have not selected yet.")
-                continue
+
+        try:
+            data_choice_enum = DATA_CHOICES_MAPPING[data_choice]
+        except KeyError:
+            print("'%s' is not a valid choice. Please try again.\n" % data_choice)
+            continue
+
+        if data_choice_enum not in datapoints:
+            datapoints.append(data_choice_enum)
         else:
-            print("\nSomething went wrong, please try retyping your input\n")
+            print("\nPlease enter a choice that you have not selected yet.")
             continue
 
         if len(datapoints) != 3:
