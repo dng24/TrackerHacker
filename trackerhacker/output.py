@@ -1,6 +1,11 @@
 import csv
 import os
 
+import pandas
+
+import plotly
+import plotly.express as px
+
 from trackerhacker.userinput import DataChoices
 
 LIST_DELIMITATOR = ","
@@ -14,6 +19,28 @@ class Output:
         if not os.path.isdir(output_dir):
             os.makedirs(output_dir)
             #TODO error checking
+
+
+
+    def make_heatmap(self) -> None:
+        self.logger.info("Making heatmap output...")
+        
+    def make_brower_comparison(self) -> None:
+        self.logger.info("Making browser comparison output...")
+        
+        browser_nums = {}
+
+        for source_url, source_url_info in self.analysis_results.items():
+            for browser, browser_info in source_url_info.items():
+                if browser not in browser_nums.keys():
+                    browser_nums[browser] = 0
+                for fqdn, fqdn_info in browser_info.items():
+                    browser_nums[browser] += fqdn_info["ad_tracker_count"]
+
+        data_represent = px.bar(browser_nums, x="Browser", y="Number of ads/trackers")
+        plotly.offline.plot(data_represent, filename=os.path.join(self.output_dir, "browser_compatison.html")
+
+
 
 
     def make_csv_output(self) -> None:
