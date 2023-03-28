@@ -69,6 +69,7 @@ def main() -> None:
     output_generator.make_csv_output()
     output_generator.make_brower_comparison()
     output_generator.make_top_sites_graph()
+    output_generator.make_top_ads_trackers_graph()
     
 if __name__ == "__main__":
     try:
