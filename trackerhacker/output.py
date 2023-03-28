@@ -48,6 +48,45 @@ class Output:
         plotly.offline.plot(data_represent, filename=os.path.join(self.output_dir, "browser_comparison.html"))
 
 
+    def make_top_sites_graph(self) -> None:
+        self.logger.info("Making browser comparison output...")
+
+        url_ranked = {}
+        url_ranked_by_browser = {}
+
+        for source_url, source_url_info in self.analysis_results.items():
+            if source_url not in url_ranked.keys():
+                url_ranked[source_url] = 0
+            for browser, browser_info in source_url_info.items():
+                url_ranked_by_browser[browser] = url_ranked
+                for fqdn, fqdn_info in browser_info.items():
+                    url_ranked_by_browser[browser][source_url] += fqdn_info["ad_tracker_count"]
+            url_ranked = {}
+
+        print(url_ranked_by_browser)
+
+        for browser, unranked_urls in url_ranked_by_browser.items():
+            df_browser_ad_tracker_rankings = pd.DataFrame()
+            browser_ad_tracker_series = pd.Series(dtype="object")
+            ranked_urls = dict(sorted(unranked_urls.items(), key=lambda item: item[1]))
+
+            count = 0
+            for u, val in ranked_urls.items():
+                print("Printing ranked items")
+                print(u)
+                print(val)
+                if count > 9:
+                    break
+                browser_ad_tracker_series["Source URL"] = u
+                browser_ad_tracker_series["Number of ads/trackers"] = val
+                
+                #browser_ad_tracker_series[u] = ranked_urls[u]
+                df_browser_ad_tracker_rankings = df_browser_ad_tracker_rankings.append(browser_ad_tracker_series, ignore_index=True)
+            
+            data_represent = px.bar(df_browser_ad_tracker_rankings, x="Source URL", y="Number of ads/trackers")
+            plotly.offline.plot(data_represent, filename=os.path.join(self.output_dir, f"{browser}_top_ten.html"))
+
+        
 
 
     def make_csv_output(self) -> None:
