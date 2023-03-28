@@ -68,7 +68,7 @@ def main() -> None:
     output_generator = output.Output(logger, analysis_results, tracker_query.datapoints, "out")
     output_generator.make_csv_output()
     output_generator.make_brower_comparison()
-
+    output_generator.make_top_sites_graph()
     
 if __name__ == "__main__":
     try:
