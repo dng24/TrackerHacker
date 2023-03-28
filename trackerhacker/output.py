@@ -1,7 +1,7 @@
 import csv
 import os
 
-import pandas
+import pandas as pd
 
 import plotly
 import plotly.express as px
@@ -37,8 +37,15 @@ class Output:
                 for fqdn, fqdn_info in browser_info.items():
                     browser_nums[browser] += fqdn_info["ad_tracker_count"]
 
-        data_represent = px.bar(browser_nums, x="Browser", y="Number of ads/trackers")
-        plotly.offline.plot(data_represent, filename=os.path.join(self.output_dir, "browser_compatison.html")
+        df_browser_ad_tracker_totals = pd.DataFrame()
+        for browser, num_ad_trackers in browser_nums.items():
+            browser_ad_tracker_series = pd.Series(dtype="object")
+            browser_ad_tracker_series["Browser"] = browser
+            browser_ad_tracker_series["Number of ads/trackers"] = num_ad_trackers
+            df_browser_ad_tracker_totals = df_browser_ad_tracker_totals.append(browser_ad_tracker_series, ignore_index=True)
+
+        data_represent = px.bar(df_browser_ad_tracker_totals, x="Browser", y="Number of ads/trackers")
+        plotly.offline.plot(data_represent, filename=os.path.join(self.output_dir, "browser_comparison.html"))
 
 
 

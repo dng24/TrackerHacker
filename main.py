@@ -67,6 +67,7 @@ def main() -> None:
     # 5. make visualizations/reports
     output_generator = output.Output(logger, analysis_results, tracker_query.datapoints, "out")
     output_generator.make_csv_output()
+    output_generator.make_brower_comparison()
 
     
 if __name__ == "__main__":
