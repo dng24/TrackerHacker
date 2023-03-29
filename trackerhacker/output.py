@@ -75,7 +75,7 @@ class Output:
 
         for browser, unranked_urls in url_ranked_by_browser.items():
             df_browser_ad_tracker_rankings = pd.DataFrame()
-            ranked_urls = dict(sorted(unranked_urls.items(), key=lambda item: item[1]))
+            ranked_urls = dict(sorted(unranked_urls.items(), key=lambda item: item[1], reverse=True))
             print(ranked_urls)
             count = 0
             for u, val in ranked_urls.items():
@@ -114,7 +114,7 @@ class Output:
 
         for browser, unranked_fqdns in adt_ranked_by_browser.items():
             df_browser_ad_tracker_rankings = pd.DataFrame()
-            ranked_adts = dict(sorted(unranked_fqdns.items(), key=lambda item: item[1]))
+            ranked_adts = dict(sorted(unranked_fqdns.items(), key=lambda item: item[1], reverse=True))
 
             count = 0
             for u, val in ranked_adts.items():

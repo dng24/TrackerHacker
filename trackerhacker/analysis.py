@@ -3,10 +3,12 @@ import json
 import requests
 import whois
 
+
 class Analysis:
     def __init__(self, logger, ad_tracker_data_dict: dict) -> None:
         self._logger = logger
         self.results = {}
+        self.geolocation_cache = {}
         for source_url, source_url_info in ad_tracker_data_dict.items():
             self.results[source_url] = {}
             for browser, browser_info in source_url_info.items():
@@ -15,7 +17,6 @@ class Analysis:
                     total_ad_tracker_requests = sum(fqdn_info.values())
                     self.results[source_url][browser][fqdn] = {"ips": self._get_ips(fqdn), "ad_tracker_count": total_ad_tracker_requests}
 
-
     def _get_ips(self, fqdn: str) -> list:
         fqdn_ips = []
         answers = dns.resolver.resolve(fqdn, 'A')
@@ -23,11 +24,9 @@ class Analysis:
             fqdn_ips.append(str(a))
 
         return fqdn_ips
-
     
     def get_results(self) -> dict:
         return self.results
-
 
     def do_whois_analysis(self) -> None:
         for source_url, source_url_info in self.results.items():
@@ -38,7 +37,6 @@ class Analysis:
                     except whois.parser.PywhoisError as e:
                         self._logger.warning(e)
                     
-
     def do_server_location_analysis(self) -> None:
         for source_url, source_url_info in self.results.items():
             for browser, browser_info in source_url_info.items():
@@ -46,20 +44,28 @@ class Analysis:
                     server_location_results = self._geolocate(self.results[source_url][browser][fqdn]["ips"])
                     self.results[source_url][browser][fqdn]["server_location"] = server_location_results
 
-
     def _geolocate(self, ips: list) -> list:
         results = []
         for ip in ips:
-            try:
-                print(ip, type(ip))
-                request_url = 'https://geolocation-db.com/jsonp/' + ip
-                print(request_url)
-                response = requests.get(request_url)
-                result = response.content.decode()
-                result = result.split("(")[1].strip(")")
-                result = json.loads(result)
-                print(f"Geolocation for {ip}: \n\n  {result}")
-                results.append(result)
-            except Exception:
-                self._logger.warning("Unable to geolocate %s" % ip)
+            if ip in self.geolocation_cache.keys():
+                print("Geolocation cache for %s" % ip)
+                results.append(self.geolocation_cache[ip])
+                break
+
+            success = False
+            while not success:
+                try:
+                    request_url = 'https://geolocation-db.com/jsonp/' + ip
+                    print(request_url)
+                    response = requests.get(request_url)
+                    result = response.content.decode()
+                    result = result.split("(")[1].strip(")")
+                    result = json.loads(result)
+                    print(f"Geolocation for {ip}: \n\n  {result}")
+                    results.append(result)
+                    success = True
+                    self.geolocation_cache[ip] = result
+                except Exception:
+                    self._logger.warning("Unable to geolocate '%s'. Trying again..." % ip)
+
         return results
