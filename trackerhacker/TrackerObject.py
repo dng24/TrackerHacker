@@ -20,19 +20,20 @@ class DataChoices(Enum):
     EXPIRATION_DATE = {OUTPUT_KEY: "whois:expiration_date", ANALYSIS_KEY: "expiration_date"}
     NAME_SERVERS = {OUTPUT_KEY: "whois:name_servers", ANALYSIS_KEY: "name_servers"}
     STATUS = {OUTPUT_KEY: "whois:status", ANALYSIS_KEY: "status"}
-    EMAILS = {OUTPUT_KEY: "whois:emails", ANALYSIS_KEY: "emails"}
     DNSSEC = {OUTPUT_KEY: "whois:dnssec", ANALYSIS_KEY: "dnssec"}
     NAME = {OUTPUT_KEY: "whois:name", ANALYSIS_KEY: "name"}
     ORG = {OUTPUT_KEY: "whois:org", ANALYSIS_KEY: "org"}
     ADDRESS = {OUTPUT_KEY: "whois:address", ANALYSIS_KEY: "address"}
     WHOIS_CITY = {OUTPUT_KEY: "whois:city", ANALYSIS_KEY: "city"}
     WHOIS_STATE = {OUTPUT_KEY: "whois:state", ANALYSIS_KEY: "state"}
-    WHOIS_REGISTRANT_POSTAL_CODE = {OUTPUT_KEY: "whois:registrant_postal_code", ANALYSIS_KEY: "registrant_postal_code"}
     WHOIS_COUNTRY = {OUTPUT_KEY: "whois:country", ANALYSIS_KEY: "country"}
+    WHOIS_REGISTRANT_POSTAL_CODE = {OUTPUT_KEY: "whois:registrant_postal_code", ANALYSIS_KEY: "registrant_postal_code"}
+    EMAILS = {OUTPUT_KEY: "whois:emails", ANALYSIS_KEY: "emails"}
 
 class TrackerObject:
-    def __init__(self, datapoints, browsers, query_urls, headless):
+    def __init__(self, datapoints, browsers, query_urls, headless, output_dir):
         self.datapoints = datapoints
         self.browsers = browsers
         self.query_urls = query_urls
         self.headless = headless 
+        self.output_dir = output_dir

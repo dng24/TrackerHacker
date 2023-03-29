@@ -19,6 +19,7 @@ PROXY_IP = "127.0.0.1"
 PROXY_PORT = 8080
 REQUEST_TIMEOUT = 5
 AD_TRACKER_LISTS_DIR = os.path.join(os.path.dirname(sys.argv[0]), "adlists")
+DEFAULT_OUTPUT_DIR = "out"
 
 
 def main() -> None:
@@ -31,9 +32,9 @@ def main() -> None:
     # Determines what interface to use
     # If user is using command line args, it uses cli run, otherwise it defaults to gui
     if len(sys.argv) > 1:
-        tracker_query = userinput.get_userinput_cli(AD_TRACKER_LISTS_DIR)
+        tracker_query = userinput.get_userinput_cli(AD_TRACKER_LISTS_DIR, DEFAULT_OUTPUT_DIR)
     else:
-        tracker_query = userinput.get_user_input_gui(AD_TRACKER_LISTS_DIR)
+        tracker_query = userinput.get_user_input_gui(AD_TRACKER_LISTS_DIR, DEFAULT_OUTPUT_DIR)
 
     # 2. open urls with selenium and capture traffic with web proxy
     # TODO: add absolute timeout and support for browser paths
@@ -65,7 +66,7 @@ def main() -> None:
     logger.info("Data analyzed!")
 
     # 5. make visualizations/reports
-    output_generator = output.Output(logger, analysis_results, tracker_query.datapoints, "out")
+    output_generator = output.Output(logger, analysis_results, tracker_query.datapoints, tracker_query.output_dir)
     output_generator.make_csv_output()
     output_generator.make_brower_comparison()
     output_generator.make_top_sites_graph()
