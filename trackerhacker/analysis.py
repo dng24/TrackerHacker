@@ -33,7 +33,10 @@ class Analysis:
         for source_url, source_url_info in self.results.items():
             for browser, browser_info in source_url_info.items():
                 for fqdn, _ in browser_info.items():
-                    self.results[source_url][browser][fqdn]["whois"] = whois.whois(fqdn)
+                    try:
+                        self.results[source_url][browser][fqdn]["whois"] = whois.whois(fqdn)
+                    except whois.parser.PywhoisError as e:
+                        self._logger.warning(e)
                     
 
     def do_server_location_analysis(self) -> None:
@@ -47,14 +50,16 @@ class Analysis:
     def _geolocate(self, ips: list) -> list:
         results = []
         for ip in ips:
-            print(ip, type(ip))
-            request_url = 'https://geolocation-db.com/jsonp/' + ip
-            print(request_url)
-            response = requests.get(request_url)
-            result = response.content.decode()
-            result = result.split("(")[1].strip(")")
-            result = json.loads(result)
-            print(f"Geolocation for {ip}: \n\n  {result}")
-            results.append(result)
-
+            try:
+                print(ip, type(ip))
+                request_url = 'https://geolocation-db.com/jsonp/' + ip
+                print(request_url)
+                response = requests.get(request_url)
+                result = response.content.decode()
+                result = result.split("(")[1].strip(")")
+                result = json.loads(result)
+                print(f"Geolocation for {ip}: \n\n  {result}")
+                results.append(result)
+            except Exception:
+                self._logger.warning("Unable to geolocate %s" % ip)
         return results

@@ -31,6 +31,7 @@ def main() -> None:
     
     # Determines what interface to use
     # If user is using command line args, it uses cli run, otherwise it defaults to gui
+    
     if len(sys.argv) > 1:
         tracker_query = userinput.get_userinput_cli(AD_TRACKER_LISTS_DIR, DEFAULT_OUTPUT_DIR)
     else:
@@ -64,9 +65,16 @@ def main() -> None:
     analysis_results = analysis_query.get_results()
     print(analysis_results)
     logger.info("Data analyzed!")
+    """
+    import json
+    with open("ana.json", "r") as f:
+        analysis_results = json.load(f)
+    """
 
     # 5. make visualizations/reports
     output_generator = output.Output(logger, analysis_results, tracker_query.datapoints, tracker_query.output_dir)
+    #from trackerhacker.TrackerObject import DataChoices
+    #output_generator = output.Output(logger, analysis_results, [DataChoices.SERVER_COUNTRY_CODE], "out")
     output_generator.make_csv_output()
     output_generator.make_brower_comparison()
     output_generator.make_top_sites_graph()
