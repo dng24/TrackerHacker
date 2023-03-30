@@ -8,7 +8,6 @@ class Analysis:
     def __init__(self, logger, ad_tracker_data_dict: dict) -> None:
         self._logger = logger
         self.results = {}
-        self.geolocation_cache = {}
         for source_url, source_url_info in ad_tracker_data_dict.items():
             self.results[source_url] = {}
             for browser, browser_info in source_url_info.items():
@@ -29,43 +28,47 @@ class Analysis:
         return self.results
 
     def do_whois_analysis(self) -> None:
+        #TODO move whois data to new section of self.results, so there aren't duplicates
+        whois_cache = {}
         for source_url, source_url_info in self.results.items():
             for browser, browser_info in source_url_info.items():
                 for fqdn, _ in browser_info.items():
+                    if fqdn in whois_cache.keys():
+                        self._logger.debug("whois cache for %s" % fqdn)
+                        self.results[source_url][browser][fqdn]["whois"] = whois_cache[fqdn]
+                        continue
+
                     try:
-                        self.results[source_url][browser][fqdn]["whois"] = whois.whois(fqdn)
+                        self._logger.debug("Running whois for %s" % fqdn)
+                        self.results[source_url][browser][fqdn]["whois"] = whois_cache[fqdn] = whois.whois(fqdn)
                     except whois.parser.PywhoisError as e:
                         self._logger.warning(e)
                     
     def do_server_location_analysis(self) -> None:
+        geolocation_cache = {}
         for source_url, source_url_info in self.results.items():
             for browser, browser_info in source_url_info.items():
                 for fqdn, _ in browser_info.items():
-                    server_location_results = self._geolocate(self.results[source_url][browser][fqdn]["ips"])
-                    self.results[source_url][browser][fqdn]["server_location"] = server_location_results
+                    results = []
+                    for ip in self.results[source_url][browser][fqdn]["ips"]:
+                        if ip in geolocation_cache.keys():
+                            self._logger.debug("Geolocation cache for %s" % ip)
+                            results.append(geolocation_cache[ip])
+                            continue
 
-    def _geolocate(self, ips: list) -> list:
-        results = []
-        for ip in ips:
-            if ip in self.geolocation_cache.keys():
-                print("Geolocation cache for %s" % ip)
-                results.append(self.geolocation_cache[ip])
-                break
+                        success = False
+                        while not success:
+                            try:
+                                request_url = 'https://geolocation-db.com/jsonp/' + ip
+                                response = requests.get(request_url)
+                                result = response.content.decode()
+                                result = result.split("(")[1].strip(")")
+                                result = json.loads(result)
+                                self._logger.debug(f"Geolocation for {ip}: {result}")
+                                results.append(result)
+                                success = True
+                                geolocation_cache[ip] = result
+                            except Exception:
+                                self._logger.warning("Unable to geolocate '%s'. Trying again..." % ip)
 
-            success = False
-            while not success:
-                try:
-                    request_url = 'https://geolocation-db.com/jsonp/' + ip
-                    print(request_url)
-                    response = requests.get(request_url)
-                    result = response.content.decode()
-                    result = result.split("(")[1].strip(")")
-                    result = json.loads(result)
-                    print(f"Geolocation for {ip}: \n\n  {result}")
-                    results.append(result)
-                    success = True
-                    self.geolocation_cache[ip] = result
-                except Exception:
-                    self._logger.warning("Unable to geolocate '%s'. Trying again..." % ip)
-
-        return results
+                    self.results[source_url][browser][fqdn]["server_location"] = results

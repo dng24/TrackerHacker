@@ -18,15 +18,16 @@ LOGGER_LEVEL = logging.DEBUG
 PROXY_IP = "127.0.0.1"
 PROXY_PORT = 8080
 REQUEST_TIMEOUT = 5
-AD_TRACKER_LISTS_DIR = os.path.join(os.path.dirname(sys.argv[0]), "adlists")
+TRACKER_HACKER_ROOT = os.path.dirname(sys.argv[0])
+AD_TRACKER_LISTS_DIR = os.path.join(TRACKER_HACKER_ROOT, "adlists")
 DEFAULT_OUTPUT_DIR = "out"
 
-
+#TODO print msg and exit when no data after each step
 def main() -> None:
     logging.basicConfig(format=LOGGER_FORMAT)
     logger = logging.getLogger("tracker_hacker")
     logger.setLevel(LOGGER_LEVEL)
-
+    
     # 1. parse args
     
     # Determines what interface to use
@@ -65,21 +66,28 @@ def main() -> None:
     analysis_results = analysis_query.get_results()
     print(analysis_results)
     logger.info("Data analyzed!")
-    """
-    import json
-    with open("ana.json", "r") as f:
-        analysis_results = json.load(f)
-    """
+    
+    #import json
+    #with open("ana2.json", "w") as f:
+    #    obj = json.dumps(analysis_results, default=str)
+    #    json.dump(obj, f)
+
+    #with open("ana_foxnews.json", "r") as f:
+    #    analysis_results = json.load(f)
 
     # 5. make visualizations/reports
-    output_generator = output.Output(logger, analysis_results, tracker_query.datapoints, tracker_query.output_dir)
+    logger.info("Generating outputs")
+    output_generator = output.Output(logger, TRACKER_HACKER_ROOT, analysis_results, tracker_query.datapoints, tracker_query.output_dir)
     #from trackerhacker.TrackerObject import DataChoices
-    #output_generator = output.Output(logger, analysis_results, [DataChoices.SERVER_COUNTRY_CODE], "out")
+    #output_generator = output.Output(logger, TRACKER_HACKER_ROOT, analysis_results, [DataChoices.SERVER_STATE], "out")
     output_generator.make_csv_output()
+    output_generator.make_heatmap()
     output_generator.make_brower_comparison()
     output_generator.make_top_sites_graph()
     output_generator.make_top_ads_trackers_graph()
-    
+    logger.info("Done!")
+
+
 if __name__ == "__main__":
     try:
         main()
