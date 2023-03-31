@@ -41,7 +41,7 @@ class WebDrivers:
                 self.driver_paths[WebBrowsers.BRAVE] = ChromeDriverManager(chrome_type=ChromeType.BRAVE).install()
             else:
                 raise("Browser not supported: %s" % browser)
-        except:
+        except Exception:
             self._logger.error("Unable to download %s driver. Check your Internet connection." % browser.value)
             return False
 

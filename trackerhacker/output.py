@@ -34,7 +34,6 @@ class Output:
             for row in reader:
                 mapping[row[0]] = row[1]
 
-        print(mapping)
         return mapping
     
     def _get_info_for_heatmap(self, entities: set, entity_type: Enum, fqdn: str, fqdn_info: dict, map_info: dict) -> dict:
@@ -94,10 +93,16 @@ class Output:
     def make_heatmap(self) -> None:
         self._logger.info("Making heatmap output...")
        
+        map_country_info = {}
+        map_state_info = {}
         for _, source_url_info in self.analysis_results.items():
             for browser, browser_info in source_url_info.items():
-                map_country_info = {}
-                map_state_info = {}
+                if browser not in map_country_info.keys():
+                    map_country_info[browser] = {}
+
+                if browser not in map_state_info.keys():
+                    map_state_info[browser] = {}
+
                 for fqdn, fqdn_info in browser_info.items():
                     countries = {server_location_dict["country_code"] for server_location_dict in fqdn_info["server_location"]}
                     countries = set()
@@ -115,37 +120,39 @@ class Output:
                         except KeyError:
                             self._logger.warning("'%s' (location of %s) not a valid country code. Skipping....." % (server_location_dict["country_code"], server_location_dict["IPv4"]))
 
-                    map_country_info = self._get_info_for_heatmap(countries, Entity.COUNTRY, fqdn, fqdn_info, map_country_info)
-                    map_state_info = self._get_info_for_heatmap(states, Entity.STATE, fqdn, fqdn_info, map_state_info)
+                    map_country_info[browser] = self._get_info_for_heatmap(countries, Entity.COUNTRY, fqdn, fqdn_info, map_country_info[browser])
+                    map_state_info[browser] = self._get_info_for_heatmap(states, Entity.STATE, fqdn, fqdn_info, map_state_info[browser])
 
-                fig = self._make_heatmap_figure(map_country_info, "ISO-3")
-                fig.update_layout(
-                    title_text="Total number world of ad/tracker requests for %s" % browser,
-                    geo=dict(
-                        showframe=False,
-                        showcoastlines=False,
-                        showcountries=True,
-                        countrywidth=1,
-                        projection_type='equirectangular'
-                    )
+        for browser, heatmap_data in map_country_info.items():
+            fig = self._make_heatmap_figure(heatmap_data, "ISO-3")
+            fig.update_layout(
+                title_text="Total number world of ad/tracker requests for %s" % browser,
+                geo=dict(
+                    showframe=False,
+                    showcoastlines=False,
+                    showcountries=True,
+                    countrywidth=1,
+                    projection_type='equirectangular'
                 )
+            )
 
-                output_path = os.path.join(self.output_dir, "%s_ad_tracker_world_map.html" % browser)
-                plotly.offline.plot(fig, filename=output_path)
-                self._logger.info("Map written to '%s'" % output_path)
+            output_path = os.path.join(self.output_dir, "%s_ad_tracker_world_map.html" % browser)
+            plotly.offline.plot(fig, filename=output_path)
+            self._logger.info("Map written to '%s'" % output_path)
 
-                fig = self._make_heatmap_figure(map_state_info, "USA-states")
-                fig.update_layout(
-                    title_text="Total number USA of ad/tracker requests for %s" % browser,
-                    geo = dict(
-                        scope="usa",
-                        projection=go.layout.geo.Projection(type = "albers usa")
-                    )
+        for browser, heatmap_data in map_state_info.items():
+            fig = self._make_heatmap_figure(heatmap_data, "USA-states")
+            fig.update_layout(
+                title_text="Total number USA of ad/tracker requests for %s" % browser,
+                geo = dict(
+                    scope="usa",
+                    projection=go.layout.geo.Projection(type = "albers usa")
                 )
+            )
 
-                output_path = os.path.join(self.output_dir, "%s_ad_tracker_usa_map.html" % browser)
-                plotly.offline.plot(fig, filename=output_path)
-                self._logger.info("Map written to '%s'" % output_path)
+            output_path = os.path.join(self.output_dir, "%s_ad_tracker_usa_map.html" % browser)
+            plotly.offline.plot(fig, filename=output_path)
+            self._logger.info("Map written to '%s'" % output_path)
         
     def make_brower_comparison(self) -> None:
         self._logger.info("Making browser comparison output...")
@@ -261,9 +268,15 @@ class Output:
                             analysis_field_name = output_choice.value["analysis_name"]
                             output_field_name = output_choice.value["output_name"]
                             if output_field_name.startswith("server:"):
-                                row.append(current_server_dict[analysis_field_name])
+                                try:
+                                    row.append(current_server_dict[analysis_field_name])
+                                except KeyError:
+                                    self._logger.warning("No server location key named '%s' in [%s][%s][%s]. Skipping..." %  (analysis_field_name, source_url, browser, fqdn))
                             elif output_field_name.startswith("whois:"):
-                                row.append(fqdn_info["whois"][analysis_field_name])
+                                try:
+                                    row.append(fqdn_info["whois"][analysis_field_name])
+                                except KeyError:
+                                    self._logger.warning("No whois key named '%s' in [%s][%s][%s]. Skipping..." %  (analysis_field_name, source_url, browser, fqdn))
 
                         output_csv.append(row)
 
