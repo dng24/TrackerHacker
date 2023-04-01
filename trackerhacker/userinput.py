@@ -22,6 +22,7 @@ DATA_CHOICES_MAPPING = {
     "d": [DataChoices.NAME, DataChoices.ORG, DataChoices.ADDRESS, DataChoices.WHOIS_CITY, DataChoices.WHOIS_STATE, DataChoices.WHOIS_COUNTRY, DataChoices.WHOIS_REGISTRANT_POSTAL_CODE, DataChoices.EMAILS]
 }
 
+# Checks the adlist directory for files
 def check_adlists(adlists_dir):
     dir = os.listdir(adlists_dir)
     if len(dir) == 0:
@@ -32,9 +33,11 @@ def check_adlists(adlists_dir):
         return 1
     return None
 
+# Help function
 def help():
-    print("\n\nWelcome to tracker hacker, a convenient tool to show what trackers are spying on you when you visit a webpage. Usage of the tool is easy!\n\nFirst, enter the types of FINISH")
+    print("\n\nWelcome to tracker hacker, a convenient tool to show what trackers are spying on you when you visit a webpage. Usage of the tool is easy!\n\nFirst, enter the types of data you want to find out about the adstrackers, then supply which browsers you want the program to run on. Following, supply either a list of manually entered urls (make sure to type them in the correct format: https://<valid url>.<valid url type>, or supply a list of urls in a txt file. You can then supply a custom list of ads/tracker to look for, or you can use the default lists. You can also choose to run the program headless, which means the selenium gui will not launch. Finally, you can specify the type of output and directory for the output.\n\n\nHelpful tips:\n - At any time, you can provide h, H, or help to the input field to bring up this help menu.\n - At any time, you can type q or quit to end the program\n - If you enter a value or entry wrong, no worries, the program will pick up on it and prompt you to re-enter it.\n")
 
+# Method to retrieve the user supplied information from the cli run 
 def get_userinput_cli(adlists_dir, default_output_dir):
     print("args")
     
@@ -47,19 +50,20 @@ def get_userinput_cli(adlists_dir, default_output_dir):
     headless = False
     default_flag = True
 
-    parser.add_argument("-d", "--data", nargs='*', help="Data types to output. a: Whois, b: IP geolocation, c: Owner. For multipe choices, enter them space delimited, eg: -d a b for whois and IP geolocation.", type=str, choices=['a','b','c'])
+    parser.add_argument("-d", "--data", nargs='*', help="Data types to output. a: Server Location, b: Server Location Coordinates, c: Domain Information, d: Owner Information. For multipe choices, enter them space delimited, eg: -d a b for whois and IP geolocation.", type=str, choices=['a','b','c'])
     parser.add_argument("-b", "--browser", nargs='*', help="Which browser to use. 1: Chrome, 2: Firefox, 3: Edge, 4: Brave. For multiple choices, enter them space delimited, eg: 1 2 for Chrome and Firefox", type=int, choices=[1,2,3,4])
     parser.add_argument("-uf", "--urlfile", help="File of URLs to analyze. Provide the path of a .txt file with a list of urls, with only a single url per line.")
     parser.add_argument("-u", "--urls", nargs='*', help="URLs to analyze. Manually type urls to analyze, space delimited.")
-    #parser.add_argument("-l", "--list", help="List of ads/trackers. This program by default uses a set of premade ad/tracker lists. If you would like to add a custom ad/tracker list, please provide the path of a .txt file with a list of custom ad/tracker urls, with only a single url per line.")
-    #parser.add_argument("-e", "--exclude", help="Use this flag to tell the program to EXCLUDE the default ad/track list referenced during run.", action='store_true')
     parser.add_argument("-hl", "--headless", help="Run program in headless mode. No interface for selenium browser will be launched. Default is non-headless", action='store_true')
     parser.add_argument("-o", "--output-directory", nargs=1, default=default_output_dir, help="The output directory to save outputs (Default: %s/)" % default_output_dir)
     
     #TODO add arg for output directory
 
+    # Parses user command line args
     args = parser.parse_args()
     
+
+    # Determines what types of data points the user supplied for -d argument
     if args.data:
         data_choices = []
         for choice in args.data:
@@ -68,12 +72,11 @@ def get_userinput_cli(adlists_dir, default_output_dir):
             data_choices.append(choice)
             datapoints.extend(DATA_CHOICES_MAPPING[choice])
     else:
-        #Gui outputs chars, in order to make it more streamlined, num choices are converted
         for choices in DATA_CHOICES_MAPPING.values():
             datapoints.extend(choices)
             
     
-
+    # Determines what browsers to run the program on
     if args.browser:
         count = 0
         browsers = []
@@ -89,8 +92,9 @@ def get_userinput_cli(adlists_dir, default_output_dir):
     else:
         browsers.append(WebBrowsers.FIREFOX)
 
-    
+    # Loaads the user specificed file for url lists
     if args.urlfile:
+        # Determines if the supplied filepath is valid
         if pathlib.Path(args.urls).suffix != '.txt':
             print("\nOops! Looks like there was a problem loading your urls file. Please make sure that it is a valid path and a correctly formatted .txt file")          
         else:    
@@ -100,7 +104,8 @@ def get_userinput_cli(adlists_dir, default_output_dir):
             #try:
             f = open(args.urls, "r")
             #except:
-            #    print("Oops, looks like there was a problem reading your url file! Please make sure it is the correct format/file type and the path is correct")
+            
+            # Iterates through the lines of the user supplied file and collects each url, stripping the extra characters off until left with only url
             for url in f:
                 try:
                     if validators.url(url.strip()):
@@ -117,10 +122,13 @@ def get_userinput_cli(adlists_dir, default_output_dir):
 
             print("\n{} Malformed urls included in your file. Added {} valid urls, continuing...\n".format(malformed, count))
 
+    # Load individual urls provided by the user in the commnd line
     if args.urls:
         count = 0
         malformed = 0
         print("Loading urls:")
+
+        # Iterates through each url and formats it to be readable by the rest of the program
         for url in args.urls:
             try:
                 if validators.url(url.strip()):
@@ -136,36 +144,27 @@ def get_userinput_cli(adlists_dir, default_output_dir):
 
         print("\n{} Malformed urls included in your file. Added {} valid urls, continuing...\n".format(malformed, count))
 
-    #if args.list:
-    #    if pathlib.Path(args.list).suffix != '.txt':
-    #        print("\nOops! Looks like there was a problem loading your urls file. Please make sure that it is a valid path and a correctly formatted .txt file")
-    #    else:
-    #        adlist_path = args.list
-
-    #if args.exclude:
-    #    default_flag = False
-
+    # Determines if the program will run headless
     if args.headless:
         headless = True
 
-
+    # Checks the adlists
     if check_adlists(adlists_dir) == None:
         exit()
 
-    #print("Choices", datapoints)
-    #print("Browsers", browsers)
-    #print("Urls", urls)
-    #print("Adlist", adlist_urls)
-
+    # Constructs tracker object to pass to main
     trackerQuery = TrackerObject.TrackerObject(datapoints, browsers, urls, headless, args.output_directory)
 
     return trackerQuery
 
+# Determines user requested datapoints to query for the supplied urls
 def datapoints():
 
     #Desired data points
     datapoints = []
     data_choices = []
+
+    # Collects and analyzes user input
     while True:
         #TODO fix user input text to match actual input
         print("\nPlease select what data points you want tracker hacker to ouptut:\n")
@@ -174,6 +173,7 @@ def datapoints():
         print("c)    Domain information\n")
         print("d)    Owner information\n")
 
+        # Prompts user, and gets valid input
         try:
             data_choice = input("--->  ")
            
@@ -215,7 +215,7 @@ def datapoints():
 
     return datapoints
 
-
+# Determines which browsers to run the program through
 def browser_choice():
 
     #Browser Choice
@@ -269,7 +269,7 @@ def browser_choice():
 
     return browser
 
-
+# Determines what urls to run the program against
 def urls():
     #Url input
     urls = []
@@ -389,7 +389,7 @@ def urls():
 
     return urls
 
-
+# Determines what ad/track lists the program will reference in its run
 def adtrack_list():
 
     #Default list or manual list entry
@@ -465,7 +465,7 @@ def adtrack_list():
 
     return default_flag, custom_list
     
-
+# Determines if the program will run headless, or if it will launch the selenium visual browser
 def headless_run():
     headless = False
     while True:
@@ -491,7 +491,7 @@ def headless_run():
 
     return headless
 
-
+# Determines the ouptut directory where the output graphics and csv will be put
 def get_output_dir(default_output_dir):
     output_dir = default_output_dir
     while True:
@@ -515,7 +515,7 @@ def get_output_dir(default_output_dir):
 
     return output_dir
 
-
+# Runs all the UI components and prompts user
 def get_user_input_gui(adlists_dir, default_output_dir):
 
     print("Welcome to tracker hacker!\n")
