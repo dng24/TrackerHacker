@@ -6,11 +6,13 @@ import whois
 import pandas as pd
 import ipaddress
 import pickle
+import os
 from cidr_trie import PatriciaTrie
 
 class Analysis:
-    def __init__(self, logger, ad_tracker_data_dict: dict, initial_results={}) -> None:
+    def __init__(self, logger, ad_tracker_data_dict: dict, root_directory: str, initial_results={}) -> None:
         self._logger = logger
+        self.root_directory = root_directory
         self.results = initial_results
         if not initial_results:
             for source_url, source_url_info in ad_tracker_data_dict.items():
@@ -50,10 +52,10 @@ class Analysis:
                         self._logger.warning(e)
                     
     def do_server_location_analysis(self) -> None:
-        dbip_df = pd.read_csv('../res/geolite_combined_filtered.csv')
+        dbip_df = pd.read_csv(os.path.join(self.root_directory, 'res/geolite_combined_filtered.csv'))
         dbip_df['IPv4'] = dbip_df.IPv4.astype(str)
         dbip_df.set_index('IPv4', inplace=True)
-        pickle_file = open('../res/cidr_trie_pickle.pkl', 'rb')
+        pickle_file = open(os.path.join(self.root_directory, 'res/cidr_trie_pickle.pkl'), 'rb')
         cidr_trie = pickle.load(pickle_file)
 
         geolocation_cache = {}
@@ -109,7 +111,7 @@ class Analysis:
                     self.results[source_url][browser][fqdn]["server_location"] = results
 
     def do_server_location_analysis_db(self) -> None:
-        dbip_df = pd.read_csv('../res/geolite_combined_filtered.csv')
+        dbip_df = pd.read_csv(os.path.join(self.root_directory, 'res/geolite_combined_filtered.csv'))
         dbip_df.set_index('IPv4')
         for source_url, source_url_info in self.results.items():
             for browser, browser_info in source_url_info.items():

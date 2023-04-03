@@ -58,7 +58,7 @@ def main() -> None:
 
     # 4. use ad/tracking domain names to get data we want
     logger.info("Analyzing data")
-    analysis_query = analysis.Analysis(logger, ad_tracker_data)
+    analysis_query = analysis.Analysis(logger, ad_tracker_data, TRACKER_HACKER_ROOT)
     #TODO opmitize by not running unnecessary analyses
     analysis_query.do_whois_analysis()
     analysis_query.do_server_location_analysis()
