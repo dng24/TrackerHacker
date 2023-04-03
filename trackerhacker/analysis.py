@@ -8,7 +8,6 @@ import pandas as pd
 import ipaddress
 import pickle
 import os
-from cidr_trie import PatriciaTrie
 
 class Analysis:
     def __init__(self, logger, ad_tracker_data_dict: dict, root_directory: str, initial_results={}) -> None:
@@ -149,13 +148,13 @@ if __name__ == "__main__":
     logger = logging.getLogger("tracker_hacker")
     logger.setLevel(LOGGER_LEVEL)
 
-    parsed_data_f = open('../tests/test_data/parsed_cnn_data.txt', 'r')
+    parsed_data_f = open('./tests/test_data/parsed_cnn_data.txt', 'r')
     parsed_data = json.load(parsed_data_f)
     parsed_data_f.close()
-    air_f = open('../tests/test_data/cnn_analysis_initial_results.json', 'r')
+    air_f = open('./tests/test_data/cnn_analysis_initial_results.json', 'r')
     air = json.load(air_f)
     air_f.close()
-    a = Analysis(logger, parsed_data, initial_results=air)
+    a = Analysis(logger, parsed_data, 'C:\\Users\\treba\\Documents\\GitHub\\TrackerHacker\\', initial_results=air)
 
     a.do_server_location_analysis()
     print(a.get_results())
