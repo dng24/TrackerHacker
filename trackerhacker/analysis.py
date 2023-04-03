@@ -3,6 +3,7 @@ import logging
 import json
 import requests
 import whois
+import numpy as np
 import pandas as pd
 import ipaddress
 import pickle
@@ -86,6 +87,7 @@ class Analysis:
                         cidr_trie_find_result = cidr_trie.find_all(ip)
                         if cidr_trie_find_result:
                             result_series = dbip_df.loc[cidr_trie_find_result[0][0]]
+                            result_series = result_series.replace(np.nan, None)
                             result = result_series.to_dict()
                             result.update({'IPv4': ip})
                             self._logger.debug(f"GeoliteDB geolocation for {ip}: {result}")
