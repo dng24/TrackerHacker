@@ -2,3 +2,6 @@ __pycache__
 *.log
 .vscode
 out/
+tests/test_data/**
+geolite_combined_filtered.csv
+geolite_combined.csv

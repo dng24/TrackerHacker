@@ -1,20 +1,24 @@
 import dns.resolver
+import logging
 import json
 import requests
 import whois
-
+import pandas as pd
+import ipaddress
+from cidr_trie import PatriciaTrie
 
 class Analysis:
-    def __init__(self, logger, ad_tracker_data_dict: dict) -> None:
+    def __init__(self, logger, ad_tracker_data_dict: dict, initial_results={}) -> None:
         self._logger = logger
-        self.results = {}
-        for source_url, source_url_info in ad_tracker_data_dict.items():
-            self.results[source_url] = {}
-            for browser, browser_info in source_url_info.items():
-                self.results[source_url][browser] = {}
-                for fqdn, fqdn_info in browser_info.items():
-                    total_ad_tracker_requests = sum(fqdn_info.values())
-                    self.results[source_url][browser][fqdn] = {"ips": self._get_ips(fqdn), "ad_tracker_count": total_ad_tracker_requests}
+        self.results = initial_results
+        if not initial_results:
+            for source_url, source_url_info in ad_tracker_data_dict.items():
+                self.results[source_url] = {}
+                for browser, browser_info in source_url_info.items():
+                    self.results[source_url][browser] = {}
+                    for fqdn, fqdn_info in browser_info.items():
+                        total_ad_tracker_requests = sum(fqdn_info.values())
+                        self.results[source_url][browser][fqdn] = {"ips": self._get_ips(fqdn), "ad_tracker_count": total_ad_tracker_requests}
 
     def _get_ips(self, fqdn: str) -> list:
         fqdn_ips = []
@@ -45,6 +49,16 @@ class Analysis:
                         self._logger.warning(e)
                     
     def do_server_location_analysis(self) -> None:
+        dbip_df = pd.read_csv('../res/geolite_combined_filtered.csv')
+        dbip_df['IPv4'] = dbip_df.IPv4.astype(str)
+        dbip_df.set_index('IPv4', inplace=True)
+        trie = PatriciaTrie()
+        #TODO: use pickle to store without needing to build each run
+        for cidr in dbip_df.index.values.tolist():
+            trie.insert(cidr, cidr)
+        print("done loading trie")
+        test_result = trie.find('70.64.94.0')
+
         geolocation_cache = {}
         for source_url, source_url_info in self.results.items():
             for browser, browser_info in source_url_info.items():
@@ -55,6 +69,20 @@ class Analysis:
                             self._logger.debug("Geolocation cache for %s" % ip)
                             results.append(geolocation_cache[ip])
                             continue
+
+                        range_found = False
+                        ip_ipaddress = ipaddress.ip_address(ip)
+                        for cidr in dbip_df.index.values.tolist():
+                            cidr_network = ipaddress.ip_network(cidr)
+                            if ip_ipaddress in cidr_network:
+                                result = dbip_df.loc[cidr]
+                                self._logger.debug(f"GeoliteDB geolocation for {ip}: {result}")
+                                results.append(result)
+                                geolocation_cache[ip] = result
+                                range_found = True
+                                break
+
+                        if range_found: continue
 
                         success = False
                         while not success:
@@ -72,3 +100,51 @@ class Analysis:
                                 self._logger.warning("Unable to geolocate '%s'. Trying again..." % ip)
 
                     self.results[source_url][browser][fqdn]["server_location"] = results
+
+    def do_server_location_analysis_db(self) -> None:
+        dbip_df = pd.read_csv('../res/geolite_combined_filtered.csv')
+        dbip_df.set_index('IPv4')
+        for source_url, source_url_info in self.results.items():
+            for browser, browser_info in source_url_info.items():
+                for fqdn, _ in browser_info.items():
+                    results = []
+                    for ip in self.results[source_url][browser][fqdn]["ips"]:
+                        range_found = False
+                        ip_ipaddress = ipaddress.ip_address(ip)
+                        for cidr in dbip_df['IPv4']:
+                            if ip_ipaddress in ipaddress.ip_network(cidr):
+                                results.append(dbip_df.iloc[[cidr]])
+                                range_found = True
+                        
+                        if not range_found:
+                            while not success:
+                                try:
+                                    request_url = 'https://geolocation-db.com/jsonp/' + ip
+                                    response = requests.get(request_url)
+                                    result = response.content.decode()
+                                    result = result.split("(")[1].strip(")")
+                                    result = json.loads(result)
+                                    self._logger.debug(f"Geolocation for {ip}: {result}")
+                                    results.append(result)
+                                    success = True
+                                except Exception:
+                                    self._logger.warning("Unable to geolocate '%s'. Trying again..." % ip)
+
+
+if __name__ == "__main__":
+    LOGGER_FORMAT = "[TRACKER HACKER] %(levelname)-8s: %(message)s"
+    LOGGER_LEVEL = logging.DEBUG
+    logging.basicConfig(format=LOGGER_FORMAT)
+    logger = logging.getLogger("tracker_hacker")
+    logger.setLevel(LOGGER_LEVEL)
+
+    parsed_data_f = open('../tests/test_data/parsed_cnn_data.txt', 'r')
+    parsed_data = json.load(parsed_data_f)
+    parsed_data_f.close()
+    air_f = open('../tests/test_data/cnn_analysis_initial_results.json', 'r')
+    air = json.load(air_f)
+    air_f.close()
+    a = Analysis(logger, parsed_data, initial_results=air)
+
+    a.do_server_location_analysis()
+    print(a.get_results())
