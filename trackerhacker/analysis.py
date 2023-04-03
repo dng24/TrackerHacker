@@ -5,6 +5,7 @@ import requests
 import whois
 import pandas as pd
 import ipaddress
+import pickle
 from cidr_trie import PatriciaTrie
 
 class Analysis:
@@ -52,12 +53,8 @@ class Analysis:
         dbip_df = pd.read_csv('../res/geolite_combined_filtered.csv')
         dbip_df['IPv4'] = dbip_df.IPv4.astype(str)
         dbip_df.set_index('IPv4', inplace=True)
-        trie = PatriciaTrie()
-        #TODO: use pickle to store without needing to build each run
-        for cidr in dbip_df.index.values.tolist():
-            trie.insert(cidr, cidr)
-        print("done loading trie")
-        test_result = trie.find('70.64.94.0')
+        pickle_file = open('../res/cidr_trie_pickle.pkl', 'rb')
+        cidr_trie = pickle.load(pickle_file)
 
         geolocation_cache = {}
         for source_url, source_url_info in self.results.items():
@@ -70,6 +67,7 @@ class Analysis:
                             results.append(geolocation_cache[ip])
                             continue
 
+                        """
                         range_found = False
                         ip_ipaddress = ipaddress.ip_address(ip)
                         for cidr in dbip_df.index.values.tolist():
@@ -81,8 +79,15 @@ class Analysis:
                                 geolocation_cache[ip] = result
                                 range_found = True
                                 break
+                        """
 
-                        if range_found: continue
+                        cidr_trie_find_result = cidr_trie.find_all(ip)
+                        if cidr_trie_find_result:
+                            result = dbip_df.loc[cidr_trie_find_result[0][0]]
+                            self._logger.debug(f"GeoliteDB geolocation for {ip}: {result}")
+                            results.append(result)
+                            geolocation_cache[ip] = result
+                            continue
 
                         success = False
                         while not success:
