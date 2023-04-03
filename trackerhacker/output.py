@@ -85,8 +85,9 @@ class Output:
             locationmode=location_mode,
             reversescale=True,
             marker_line_color='darkgray',
-            colorbar_title="Number<br>ads/trackers"
+            colorbar_title="Number<br>ads/trackers",
         ))
+
 
         return fig
 
@@ -137,6 +138,7 @@ class Output:
             )
 
             output_path = os.path.join(self.output_dir, "%s_ad_tracker_world_map.html" % browser)
+            fig.update_layout(title_text="World Heatmap of Ads/Trackers", title_x=0.5)
             plotly.offline.plot(fig, filename=output_path)
             self._logger.info("Map written to '%s'" % output_path)
 
@@ -151,6 +153,7 @@ class Output:
             )
 
             output_path = os.path.join(self.output_dir, "%s_ad_tracker_usa_map.html" % browser)
+            fig.update_layout(title_text="USA Heatmap of Ads/Trackers", title_x=0.5)
             plotly.offline.plot(fig, filename=output_path)
             self._logger.info("Map written to '%s'" % output_path)
         
@@ -173,6 +176,7 @@ class Output:
             df_browser_ad_tracker_totals = pd.concat([df_browser_ad_tracker_totals, browser_ad_tracker_series.to_frame().T], ignore_index=True)
 
         data = px.bar(df_browser_ad_tracker_totals, x="Browser", y="Number of ads/trackers")
+        data.update_layout(title_text="Browser Comparison", title_x=0.5)
         output_path = os.path.join(self.output_dir, "browser_comparison.html")
         plotly.offline.plot(data, filename=output_path)
         self._logger.info("Plot written to '%s'" % output_path)
@@ -207,6 +211,7 @@ class Output:
                 count += 1
             
             data = px.bar(df_browser_ad_tracker_rankings, x="Source URL", y="Number of ads/trackers")
+            data.update_layout(title_text=f"{browser} Sites With The Most Ads/Trackers", title_x=0.5)
             output_path = os.path.join(self.output_dir, f"{browser}_top_ten.html")
             plotly.offline.plot(data, filename=output_path)
             self._logger.info("Plot written to '%s'" % output_path)
@@ -242,6 +247,7 @@ class Output:
                 count += 1
 
             data = px.bar(df_browser_ad_tracker_rankings, x="Ad/Tracker", y="Frequency")
+            data.update_layout(title_text=f"{browser} Top Ten Most Prevalent Ads/Trackers", title_x=0.5)
             output_path = os.path.join(self.output_dir, f"{browser}_top_ten_adstrackers.html")
             plotly.offline.plot(data, filename=output_path)
             self._logger.info("Plot written to '%s'" % output_path)
