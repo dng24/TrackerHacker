@@ -50,7 +50,7 @@ def get_userinput_cli(adlists_dir, default_output_dir):
     headless = False
     default_flag = True
 
-    parser.add_argument("-d", "--data", nargs='*', help="Data types to output. a: Server Location, b: Server Location Coordinates, c: Domain Information, d: Owner Information. For multipe choices, enter them space delimited, eg: -d a b for whois and IP geolocation.", type=str, choices=['a','b','c'])
+    parser.add_argument("-d", "--data", nargs='*', help="Data types to output. a: Server Location, b: Server Location Coordinates, c: Domain Information, d: Owner Information. For multipe choices, enter them space delimited, eg: -d a b for whois and IP geolocation.", type=str, choices=['a','b','c', 'd'])
     parser.add_argument("-b", "--browser", nargs='*', help="Which browser to use. 1: Chrome, 2: Firefox, 3: Edge, 4: Brave. For multiple choices, enter them space delimited, eg: 1 2 for Chrome and Firefox", type=int, choices=[1,2,3,4])
     parser.add_argument("-uf", "--urlfile", help="File of URLs to analyze. Provide the path of a .txt file with a list of urls, with only a single url per line.")
     parser.add_argument("-u", "--urls", nargs='*', help="URLs to analyze. Manually type urls to analyze, space delimited.")
@@ -172,6 +172,7 @@ def datapoints():
         print("b)    Server location coordinates\n")
         print("c)    Domain information\n")
         print("d)    Owner information\n")
+        print("e)    All of the Above\n")
 
         # Prompts user, and gets valid input
         try:
@@ -187,6 +188,12 @@ def datapoints():
         except Exception:
             print("\nOops, something went wrong with your input. Please try again")
             continue
+
+        if data_choice == 'e':
+            for choice, value in DATA_CHOICES_MAPPING.items():
+                data_choices.append(choice)
+                datapoints.extend(value)
+            break
 
         try:
             data_choice_items = DATA_CHOICES_MAPPING[data_choice]
@@ -226,6 +233,7 @@ def browser_choice():
         print("b)    Firefox\n")
         print("c)    Edge\n")
         print("d)    Brave\n")
+        print("e)    All of the Above\n")
 
         try:
             browser_choice = input("--->   ")
@@ -248,6 +256,11 @@ def browser_choice():
         elif browser_choice == 'c':
             browser.append(WebBrowsers.EDGE)
         elif browser_choice == 'd':
+            browser.append(WebBrowsers.BRAVE)
+        elif browser_choice == 'e':
+            browser.append(WebBrowsers.CHROME)
+            browser.append(WebBrowsers.FIREFOX)
+            browser.append(WebBrowsers.EDGE)
             browser.append(WebBrowsers.BRAVE)
         else:
             print("\nPlease enter a valid choice for browser")
