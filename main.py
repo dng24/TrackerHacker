@@ -13,7 +13,6 @@ except ModuleNotFoundError as e:
     exit(1)
 
 
-LOGGER_FORMAT = "[TRACKER HACKER] %(levelname)-8s: %(message)s"
 LOGGER_LEVEL = logging.DEBUG
 PROXY_IP = "127.0.0.1"
 PROXY_PORT = 8080
@@ -22,10 +21,37 @@ TRACKER_HACKER_ROOT = os.path.dirname(sys.argv[0])
 AD_TRACKER_LISTS_DIR = os.path.join(TRACKER_HACKER_ROOT, "adlists")
 DEFAULT_OUTPUT_DIR = "out"
 
+class ColorFormatter(logging.Formatter):
+    green = "\x1b[32m"
+    purple = "\x1b[35m"
+    blue = "\x1b[36m"
+    yellow = "\x1b[33m"
+    red = "\x1b[31m"
+    bold_red = "\x1b[1;31m"
+    clear = "\x1b[0m"
+    LOGGER_FORMAT = "{green}[TRACKER HACKER] {purple}%(levelname)-8s: {color}%(message)s{clear}"
+
+    FORMATS = {
+        logging.DEBUG: LOGGER_FORMAT.format(green=green, purple=purple, color=blue, clear=clear),
+        logging.INFO: LOGGER_FORMAT.format(green=green, purple=purple, color=clear, clear=clear),
+        logging.WARNING: LOGGER_FORMAT.format(green=green, purple=purple, color=yellow, clear=clear),
+        logging.ERROR: LOGGER_FORMAT.format(green=green, purple=purple, color=red, clear=clear),
+        logging.CRITICAL: LOGGER_FORMAT.format(green=green, purple=purple, color=bold_red, clear=clear)
+    }
+
+    def format(self, log: str) -> str:
+        log_fmt = self.FORMATS.get(log.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(log)
+    
+
 def main() -> int:
-    logging.basicConfig(format=LOGGER_FORMAT)
     logger = logging.getLogger("tracker_hacker")
     logger.setLevel(LOGGER_LEVEL)
+    log_handler = logging.StreamHandler()
+    log_handler.setLevel(LOGGER_LEVEL)
+    log_handler.setFormatter(ColorFormatter())
+    logger.addHandler(log_handler)
     
     # 1. parse args
     # Determines what interface to use
@@ -70,7 +96,7 @@ def main() -> int:
         logger.warning("No analysis results, exiting...")
         return 1
 
-    print(analysis_results)
+    logger.debug(analysis_results)
     logger.info("Data analyzed!")
     
     #import json
