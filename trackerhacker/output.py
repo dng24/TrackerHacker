@@ -5,7 +5,9 @@ import plotly
 import plotly.express as px
 import plotly.graph_objects as go
 
+from datetime import datetime
 from enum import Enum
+from typing import Any
 
 from trackerhacker.userinput import DataChoices
 
@@ -88,7 +90,6 @@ class Output:
             colorbar_title="Number<br>ads/trackers",
         ))
 
-
         return fig
 
     def make_heatmap(self) -> None:
@@ -127,7 +128,7 @@ class Output:
         for browser, heatmap_data in map_country_info.items():
             fig = self._make_heatmap_figure(heatmap_data, "ISO-3")
             fig.update_layout(
-                title_text="Total number world of ad/tracker requests for %s" % browser,
+                title_text="World Heatmap of Ads/Trackers for %s" % browser,
                 geo=dict(
                     showframe=False,
                     showcoastlines=False,
@@ -138,22 +139,20 @@ class Output:
             )
 
             output_path = os.path.join(self.output_dir, "%s_ad_tracker_world_map.html" % browser)
-            fig.update_layout(title_text="World Heatmap of Ads/Trackers", title_x=0.5)
             plotly.offline.plot(fig, filename=output_path)
             self._logger.info("Map written to '%s'" % output_path)
 
         for browser, heatmap_data in map_state_info.items():
             fig = self._make_heatmap_figure(heatmap_data, "USA-states")
             fig.update_layout(
-                title_text="Total number USA of ad/tracker requests for %s" % browser,
+                title_text="USA Heatmap of Ads/Trackers for %s" % browser,
                 geo = dict(
                     scope="usa",
-                    projection=go.layout.geo.Projection(type = "albers usa")
+                    projection=go.layout.geo.Projection(type="albers usa")
                 )
             )
 
             output_path = os.path.join(self.output_dir, "%s_ad_tracker_usa_map.html" % browser)
-            fig.update_layout(title_text="USA Heatmap of Ads/Trackers", title_x=0.5)
             plotly.offline.plot(fig, filename=output_path)
             self._logger.info("Map written to '%s'" % output_path)
         
@@ -172,11 +171,11 @@ class Output:
         for browser, num_ad_trackers in browser_nums.items():
             browser_ad_tracker_series = pd.Series(dtype="object")
             browser_ad_tracker_series["Browser"] = browser
-            browser_ad_tracker_series["Number of ads/trackers"] = num_ad_trackers
+            browser_ad_tracker_series["Number of Ad/Tracker Requests"] = num_ad_trackers
             df_browser_ad_tracker_totals = pd.concat([df_browser_ad_tracker_totals, browser_ad_tracker_series.to_frame().T], ignore_index=True)
 
-        data = px.bar(df_browser_ad_tracker_totals, x="Browser", y="Number of ads/trackers")
-        data.update_layout(title_text="Browser Comparison", title_x=0.5)
+        data = px.bar(df_browser_ad_tracker_totals, x="Browser", y="Number of Ad/Tracker Requests")
+        data.update_layout(title_text="Number of Ad/Tracker Requests Per Browser", title_x=0.5)
         output_path = os.path.join(self.output_dir, "browser_comparison.html")
         plotly.offline.plot(data, filename=output_path)
         self._logger.info("Plot written to '%s'" % output_path)
@@ -206,12 +205,12 @@ class Output:
                     break
 
                 browser_ad_tracker_series["Source URL"] = u
-                browser_ad_tracker_series["Number of ads/trackers"] = val
+                browser_ad_tracker_series["Number of Ad/Tracker Requests"] = val
                 df_browser_ad_tracker_rankings = pd.concat([df_browser_ad_tracker_rankings, browser_ad_tracker_series.to_frame().T], ignore_index=True)
                 count += 1
             
-            data = px.bar(df_browser_ad_tracker_rankings, x="Source URL", y="Number of ads/trackers")
-            data.update_layout(title_text=f"{browser} Sites With The Most Ads/Trackers", title_x=0.5)
+            data = px.bar(df_browser_ad_tracker_rankings, x="Source URL", y="Number of Ad/Tracker Requests")
+            data.update_layout(title_text=f"{browser} Sites With the Most Ads/Trackers Requests", title_x=0.5)
             output_path = os.path.join(self.output_dir, f"{browser}_top_ten.html")
             plotly.offline.plot(data, filename=output_path)
             self._logger.info("Plot written to '%s'" % output_path)
@@ -241,16 +240,28 @@ class Output:
                 if count > 9:
                     break
 
-                browser_ad_tracker_series["Ad/Tracker"] = u
-                browser_ad_tracker_series["Frequency"] = val
+                browser_ad_tracker_series["Ad/Tracker Domain"] = u
+                browser_ad_tracker_series["Number of Requests"] = val
                 df_browser_ad_tracker_rankings = pd.concat([df_browser_ad_tracker_rankings, browser_ad_tracker_series.to_frame().T], ignore_index=True)
                 count += 1
 
-            data = px.bar(df_browser_ad_tracker_rankings, x="Ad/Tracker", y="Frequency")
-            data.update_layout(title_text=f"{browser} Top Ten Most Prevalent Ads/Trackers", title_x=0.5)
+            data = px.bar(df_browser_ad_tracker_rankings, x="Ad/Tracker Domain", y="Number of Requests")
+            data.update_layout(title_text=f"{browser} Top Ten Most Prevalent Ads/Trackers Domains by Number of Requests", title_x=0.5)
             output_path = os.path.join(self.output_dir, f"{browser}_top_ten_adstrackers.html")
             plotly.offline.plot(data, filename=output_path)
             self._logger.info("Plot written to '%s'" % output_path)
+
+    def _prettify_output(self, output: Any) -> str:
+        if output is None:
+            prettified_output = None
+        elif type(output) == list:
+            prettified_output = ",".join([self._prettify_output(item) for item in output])
+        elif type(output) == datetime:
+            prettified_output = output.strftime("%Y-%m-%d %H:%M:%S%z")
+        else:
+            prettified_output = str(output)
+
+        return prettified_output
 
     def make_csv_output(self) -> None:
         self._logger.info("Making CSV output...")
@@ -275,37 +286,23 @@ class Output:
                             output_field_name = output_choice.value["output_name"]
                             if output_field_name.startswith("server:"):
                                 try:
-                                    row.append(current_server_dict[analysis_field_name])
+                                    row.append(self._prettify_output(current_server_dict[analysis_field_name]))
                                 except KeyError:
                                     self._logger.warning("No server location key named '%s' in [%s][%s][%s]. Skipping..." %  (analysis_field_name, source_url, browser, fqdn))
                             elif output_field_name.startswith("whois:"):
-                                if analysis_field_name == "domain_name" or analysis_field_name == "name_servers" or analysis_field_name == "status" or analysis_field_name == "emails":
-                                    try:
-                                        append_string = ""
-                                        for item in fqdn_info["whois"][analysis_field_name]:
-                                            append_string = append_string + item + ","
-                                        row.append(append_string[:-1])
-                                    except:
-                                        self._logger.warning("Stuff")
-                                elif analysis_field_name == "creation_date" or analysis_field_name == "expiration_date":
-                                    try:
-                                        append_string = ""
-                                        for item in fqdn_info["whois"][analysis_field_name]:
-                                            append_string = append_string + str(item) + ","
-                                        row.append(append_string[:-1])
-                                    except:
-                                        self._logger.warning("Things")
-                                else:
-                                    try:
-                                        row.append(fqdn_info["whois"][analysis_field_name])
-                                    except KeyError:
-                                        self._logger.warning("No whois key named '%s' in [%s][%s][%s]. Skipping..." %  (analysis_field_name, source_url, browser, fqdn))
+                                try:
+                                    row.append(self._prettify_output(fqdn_info["whois"][analysis_field_name]))
+                                except KeyError:
+                                    self._logger.warning("No whois key named '%s' in [%s][%s][%s]. Skipping..." %  (analysis_field_name, source_url, browser, fqdn))
 
                         output_csv.append(row)
 
-        output_csv_filename = os.path.join(self.output_dir, "output.csv")
-        with open(output_csv_filename, "w", encoding="utf-8", newline="") as f:
-            csv_writer = csv.writer(f)
-            csv_writer.writerows(output_csv)
-            #TODO error checking
-            self._logger.info("CSV written to '%s'" % output_csv_filename)
+        output_csv_filepath = os.path.join(self.output_dir, "output.csv")
+        try:
+            with open(output_csv_filepath, "w", encoding="utf-8", newline="") as f:
+                csv_writer = csv.writer(f)
+                csv_writer.writerows(output_csv)
+                #TODO error checking
+                self._logger.info("CSV written to '%s'" % output_csv_filepath)
+        except PermissionError:
+            self._logger.error("Permission denied: '%s'. Unable to open CSV for writing." % output_csv_filepath)

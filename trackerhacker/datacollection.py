@@ -32,18 +32,20 @@ def collect_request_urls(logger, urls: list, browsers: list, proxy_ip: str="127.
     t = threading.Thread(target=_start_proxy_launcher, args=(proxy, proxy_ip, proxy_port))
     t.start()
 
-    total_urls = num_urls_left = len(urls) * len(browsers)
+    total_urls = len(urls) * len(browsers)
+    progress = 1
     for url in urls:
         results[url] = {}
         for browser in browsers:
-            logger.info("Launching %s to open %s [%d/%d]" % (browser.value, url, num_urls_left, total_urls))
-            num_urls_left -= 1
+            logger.info("Launching %s to open %s [%d/%d]" % (browser.value, url, progress, total_urls))
+            progress += 1
             driver = webdrivers.get_driver(browser, proxy_ip=proxy_ip, proxy_port=proxy_port, headless=headless)
             if driver is None:
                 continue
 
             time.sleep(2)
             proxy.collect_data()
+            driver.get(url)
             try:
                 driver.get(url)
             except selenium.common.exceptions.WebDriverException:
