@@ -1,19 +1,13 @@
-import socket
-import urllib.request
-import sys
-import os
-import requests
-import pathlib
-import validators
 import argparse
-
-from enum import Enum
+import os
+import pathlib
+import sys
+import validators
 
 from trackerhacker.browsermanager import WebBrowsers
 from trackerhacker import TrackerObject
 from trackerhacker.TrackerObject import DataChoices
 
-DATA_CHOICES_MAPPING = { str(index): data_choice for index, data_choice in enumerate(DataChoices) }
 
 DATA_CHOICES_MAPPING = {
     "a": [DataChoices.SERVER_COUNTRY_CODE, DataChoices.SERVER_COUNTRY_NAME, DataChoices.SERVER_STATE, DataChoices.SERVER_CITY, DataChoices.SERVER_POSTAL_CODE],
@@ -22,33 +16,31 @@ DATA_CHOICES_MAPPING = {
     "d": [DataChoices.NAME, DataChoices.ORG, DataChoices.ADDRESS, DataChoices.WHOIS_CITY, DataChoices.WHOIS_STATE, DataChoices.WHOIS_COUNTRY, DataChoices.WHOIS_REGISTRANT_POSTAL_CODE, DataChoices.EMAILS]
 }
 
+
 # Checks the adlist directory for files
 def check_adlists(adlists_dir):
     dir = os.listdir(adlists_dir)
     if len(dir) == 0:
-        print("There was a problem with referencing files in the adlists dir. Please make sure the directory is not empty.")
+        print("There was a problem with referencing ad list files in '%s'. Please make sure the directory is not empty." % adlists_dir)
+        return None
     else:
         x = len(dir)
         print(f"Num files: {x}")
         return 1
-    return None
+
 
 # Help function
 def help():
     print("\n\nWelcome to tracker hacker, a convenient tool to show what trackers are spying on you when you visit a webpage. Usage of the tool is easy!\n\nFirst, enter the types of data you want to find out about the adstrackers, then supply which browsers you want the program to run on. Following, supply either a list of manually entered urls (make sure to type them in the correct format: https://<valid url>.<valid url type>, or supply a list of urls in a txt file. You can then supply a custom list of ads/tracker to look for, or you can use the default lists. You can also choose to run the program headless, which means the selenium gui will not launch. Finally, you can specify the type of output and directory for the output.\n\n\nHelpful tips:\n - At any time, you can provide h, H, or help to the input field to bring up this help menu.\n - At any time, you can type q or quit to end the program\n - If you enter a value or entry wrong, no worries, the program will pick up on it and prompt you to re-enter it.\n")
 
+
 # Method to retrieve the user supplied information from the cli run 
 def get_userinput_cli(adlists_dir, default_output_dir):
-    print("args")
-    
-
     datapoints = []
     browsers = []
     urls = []
-    adlist_path = ""
     parser = argparse.ArgumentParser()
     headless = False
-    default_flag = True
 
     parser.add_argument("-d", "--data", nargs='*', help="Data types to output. a: Server Location, b: Server Location Coordinates, c: Domain Information, d: Owner Information. For multipe choices, enter them space delimited, eg: -d a b for whois and IP geolocation.", type=str, choices=['a','b','c', 'd'])
     parser.add_argument("-b", "--browser", nargs='*', help="Which browser to use. 1: Chrome, 2: Firefox, 3: Edge, 4: Brave. For multiple choices, enter them space delimited, eg: 1 2 for Chrome and Firefox", type=int, choices=[1,2,3,4])
@@ -57,11 +49,8 @@ def get_userinput_cli(adlists_dir, default_output_dir):
     parser.add_argument("-hl", "--headless", help="Run program in headless mode. No interface for selenium browser will be launched. Default is non-headless", action='store_true')
     parser.add_argument("-o", "--output-directory", nargs=1, default=default_output_dir, help="The output directory to save outputs (Default: %s/)" % default_output_dir)
     
-    #TODO add arg for output directory
-
     # Parses user command line args
     args = parser.parse_args()
-    
 
     # Determines what types of data points the user supplied for -d argument
     if args.data:
@@ -74,7 +63,6 @@ def get_userinput_cli(adlists_dir, default_output_dir):
     else:
         for choices in DATA_CHOICES_MAPPING.values():
             datapoints.extend(choices)
-            
     
     # Determines what browsers to run the program on
     if args.browser:
@@ -95,8 +83,8 @@ def get_userinput_cli(adlists_dir, default_output_dir):
     # Loaads the user specificed file for url lists
     if args.urlfile:
         # Determines if the supplied filepath is valid
-        if pathlib.Path(args.urls).suffix != '.txt':
-            print("\nOops! Looks like there was a problem loading your urls file. Please make sure that it is a valid path and a correctly formatted .txt file")          
+        if pathlib.Path(args.urls).suffix.lower() != '.txt':
+            print("\nOops! Looks like there was a problem loading your urls file. Please make sure that it is a valid path and a correctly formatted TXT file.")          
         else:    
             count = 0
             malformed = 0
@@ -120,7 +108,7 @@ def get_userinput_cli(adlists_dir, default_output_dir):
                     malformed += 1 
             f.close()
 
-            print("\n{} Malformed urls included in your file. Added {} valid urls, continuing...\n".format(malformed, count))
+            print("\n{} malformed urls included in your file. Added {} valid urls, continuing...\n".format(malformed, count))
 
     # Load individual urls provided by the user in the commnd line
     if args.urls:
@@ -150,24 +138,22 @@ def get_userinput_cli(adlists_dir, default_output_dir):
 
     # Checks the adlists
     if check_adlists(adlists_dir) == None:
-        exit()
+        return None
 
     # Constructs tracker object to pass to main
     trackerQuery = TrackerObject.TrackerObject(datapoints, browsers, urls, headless, args.output_directory)
-
     return trackerQuery
+
 
 # Determines user requested datapoints to query for the supplied urls
 def datapoints():
-
     #Desired data points
     datapoints = []
     data_choices = []
 
     # Collects and analyzes user input
     while True:
-        #TODO fix user input text to match actual input
-        print("\nPlease select what data points you want tracker hacker to ouptut:\n")
+        print("\nPlease select a data point you want Tracker Hacker to ouptut:\n")
         print("a)    Server location\n")
         print("b)    Server location coordinates\n")
         print("c)    Domain information\n")
@@ -176,23 +162,22 @@ def datapoints():
 
         # Prompts user, and gets valid input
         try:
-            data_choice = input("--->  ")
-           
-            if (data_choice == "help") or (data_choice == "Help") or (data_choice == 'h'):
+            data_choice = input("--->  ").lower()
+            if data_choice in ["h", "help"]:
                 help()
                 continue
-
-            if data_choice == 'q':
+            elif data_choice in ["q", "quit"]:
                 return None
 
         except Exception:
-            print("\nOops, something went wrong with your input. Please try again")
+            print("\nOops, something went wrong with your input. Please try again.")
             continue
 
         if data_choice == 'e':
             for choice, value in DATA_CHOICES_MAPPING.items():
                 data_choices.append(choice)
                 datapoints.extend(value)
+
             break
 
         try:
@@ -209,26 +194,29 @@ def datapoints():
             continue
 
         if len(data_choices) != 4:
-            c = input("\nWould you like to select another datapoint? (y or any other key):")
-
-            if c == 'y':
-                continue
-            if c == 'q':
-                return None
-            else:
-                break
+            while True:
+                c = input("\nWould you like to select another datapoint? [y/N/h/q] ").lower()
+                if c in ["y", "yes"]:
+                    break
+                elif c in ["h", "help"]:
+                    help()
+                elif c in ["q", "quit"]:
+                    return None
+                else:
+                    return datapoints
+                
         else:
             break
 
     return datapoints
 
+
 # Determines which browsers to run the program through
 def browser_choice():
-
     #Browser Choice
-    browser = [] #Chrome is default, value set at 'a'
+    browser = []
     while True:
-        print("\n Please select the browser for tracker hacker to query\n")
+        print("\nPlease select the browser for Tracker Hacker to query:\n")
         print("a)    Chrome\n")
         print("b)    Firefox\n")
         print("c)    Edge\n")
@@ -236,18 +224,16 @@ def browser_choice():
         print("e)    All of the Above\n")
 
         try:
-            browser_choice = input("--->   ")
-
-            if (browser_choice == "help") or (browser_choice == "Help") or (browser_choice == 'h'):
+            browser_choice = input("--->   ").lower()
+            if browser_choice in ["h", "help"]:
                 help()
                 continue
-
-            if browser_choice == 'q':
+            elif browser_choice in ["q", "quit"]:
                 return None
+            
         except Exception:
-            print("\nOops! Something went wrong with your input. Please try again")
+            print("\nOops! Something went wrong with your input. Please try again.")
             continue
-
 
         if browser_choice == 'a':
             browser.append(WebBrowsers.CHROME)
@@ -263,124 +249,115 @@ def browser_choice():
             browser.append(WebBrowsers.EDGE)
             browser.append(WebBrowsers.BRAVE)
         else:
-            print("\nPlease enter a valid choice for browser")
+            print("'%s' is not a valid choice. Please try again.\n" % browser_choice)
             continue
 
         if len(browser) != 4:
-            c = input("\nWould you like to select another browser? (y or any other key):")
-
-            if c == 'y':
-                continue
-            if c == 'q':
-                return None
-            else:
-                break
+             while True:
+                c = input("\nWould you like to select another browser? [y/N/h/q] ").lower()
+                if c in ["y", "yes"]:
+                    break
+                elif c in ["h", "help"]:
+                    help()
+                elif c in ["q", "quit"]:
+                    return None
+                else:
+                    return browser
+                
         else:
             break
 
-
-
     return browser
+
 
 # Determines what urls to run the program against
 def urls():
     #Url input
     urls = []
-    url_input_type = 'a' #Default is manual entry
+    url_input_type = ""
 
     while True:
-
         print("\nPlease enter what type of url input you will use.\n")
         print("a)    Manual entry\n")
         print("b)    File upload\n")
        
         try:
-            url_input_type = input("\nPlease enter what type of url input you will use:  ")
+            url_input_type = input("--->   ").lower()
         except Exception:
             print("\nOops! There was a problem with your input, please try again.")
 
-        if (url_input_type == "help") or (url_input_type == "Help") or (url_input_type == 'h'):
+        if url_input_type in ["h", "help"]:
             help()
             continue
-
-        if url_input_type == 'q':
+        elif url_input_type in ["q", "quit"]:
             return None
-
-        if url_input_type == 'a' or url_input_type == 'b':
+        elif url_input_type in ["a", "b"]:
             break
         else:
             print("\nPlease enter a valid input.")
 
-
     if url_input_type == 'a':
         while True:
             try:
-                user_input = input("Enter the desired URL: ")
-
-                if (user_input == "help") or (user_input == "Help") or (user_input == 'h'):
+                print("\nEnter the desired URL:\n")
+                user_input = input("--->   ")
+                if user_input.lower() in ["h", "help"]:
                     help()
                     continue
-
-                if user_input == 'q':
+                elif user_input.lower() in ["q", "quit"]:
                     return None
 
-                #socket.gethostbyname(user_input)
-                #urllib.request.urlopen(user_input)
-                #get = urllib.request.urlopen(str(user_input))
-                #print(get.getcode())
-                #if get.getcode() == 200:
                 if validators.url(str(user_input)):
                     urls.append(user_input)
-                    c = input("Valid url entered! Would you like to enter another url (y or any other key)?\n")
-
-                    if c == 'y':
-                        continue
-                    
-                    if c == 'q':
-                        return None
+                    print("Valid URL entered!")
+                    while True:
+                        c = input("\nWould you like to enter another URL? [y/N/h/q] ").lower()
+                        if c in ["y", "yes"]:
+                            break
+                        elif c in ["h", "help"]:
+                            help()
+                            continue
+                        elif c in ["q", "quit"]:
+                            return None
+                        else:
+                            return urls
                 else:
-                    print("Malformed URL entered, please type your desired url again")
+                    print("Malformed URL entered, please type your desired URL again.\n")
                     continue
 
-                break
             except Exception:
                 print("Malformed URL entered, please type your desired url again\n")
                 continue
 
-            break
-
     if url_input_type == 'b':
         while True:
             try:
-                filepath = input("\nPlease enter the filepath of a txt file containing your list of urls:   ")
+                print("\nEnter the filepath of a TXT file containing your list of URLs:\n")
+                filepath = input("--->   ")
                 
-                if (filepath == "help") or (filepath == "Help") or (filepath == 'h'):
+                if filepath.lower() in ["h", "help"]:
                     help()
                     continue
-
-                if filepath == 'q':
+                elif filepath.lower() in ["q", "quit"]:
                     return None
            
-                if pathlib.Path(filepath).suffix != '.txt':
+                if pathlib.Path(filepath.lower()).suffix != '.txt':
                     print("error")
                     raise ValueError
-            except:
-                print("\nOops! Looks like there was a problem referencing the file. Make sure you entered the path correctly and the file is a txt file.")
+            except Exception:
+                print("\nOops! Looks like there was a problem referencing the file. Make sure you entered the path correctly and the file is a TXT file.")
                 continue
 
             try:
                 f = open(filepath, "r")
             except Exception:
-                print("\nOops! Looks like there was a problem referencing the file. Make sure you entered the path correctly and the file is a txt file.")
+                print("\nOops! Looks like there was a problem referencing the file. Make sure you entered the path correctly and the file is a TXT file.")
                 continue
-
 
             count = 0
             malformed = 0
             for url in f:
                 try:
-                    #get = urllib.request.urlopen(str(url.strip()))
-                    #if get.getcode() == 200:
                     if validators.url(str(url.strip())):
                         print("[{}]: {}".format(count, url.strip()))
                         urls.append(url.strip())
@@ -395,112 +372,32 @@ def urls():
             f.close()
 
             if malformed > 0:
-                print("\n{} Malformed urls included in your file. Added {} valid urls, continuing...\n".format(malformed, count))
-
+                print("\n{} malformed urls included in your file. Added {} valid urls, continuing...\n".format(malformed, count))
 
             break
 
     return urls
 
-# Determines what ad/track lists the program will reference in its run
-def adtrack_list():
-
-    #Default list or manual list entry
-    custom_list = ""
-    default_flag = True
-
-    while True:
-
-        #print("\nPlease select if you want to supply a custom ad/tracker list or if you would like to use the default list.\n")
-        #print("a)    Default list\n")
-        #print("b)    Custom list\n")
-
-        try:
-            default_choice = input("\nTracker Hacker uses a default ad/tracker list to query your results against. If you would like to use the default list, press any key to continue. If you do not want to use the default list, please enter n/no\n")
-        except Exception:
-            print("error")
-            continue
-
-        if (default_choice == "help") or (default_choice == "Help") or (default_choice == 'h'):
-            help()
-            continue
-
-        if default_choice == 'q':
-            return None, None
-
-        if default_choice == 'n' or default_choice == "no":
-            default_flag = False
-
-        break
-
-
-    while True:
-        if default_flag:
-            try:
-                c_lists = input("\nWould you like to enter a custom ad/tracker list (y or yes, any other key for no):  ")
-            except Exception:
-                print("error")
-                continue
-
-            if (c_lists == "help") or (c_lists == "Help") or (c_lists == 'h'):
-                help()
-                continue
-
-            if c_lists == 'q':
-                return None, None
-
-            if (c_lists == 'y') or (c_lists == "yes"):
-                print("yes")
-            else:
-                break
-
-        try:
-            filepath = input("\nPlease enter the path to a txt file containing your ad/tracker list:   ")
-            
-            if (filepath == "help") or (filepath == "Help") or (filepath == 'h'):
-                help()
-                continue
-
-            if filepath == 'q':
-                return None, None
-
-            if pathlib.Path(filepath):
-                custom_list = filepath
-            else:
-                raise ValueError
-
-        except Exception:
-            print("error in processing filepath")
-            continue
-            
-        break
-        
-
-    return default_flag, custom_list
     
 # Determines if the program will run headless, or if it will launch the selenium visual browser
 def headless_run():
     headless = False
     while True:
         try:
-            headless_choice = input("\nPlease select if you would like to run this program headless (without the selenium web browser visual interface running). Enter y/yes for yes, any other key for no.")
-            
-            if (headless_choice == "help") or (headless_choice == "Help") or (headless_choice == 'h'):
+            headless_choice = input("\nWould you like to collect data in headless mode (GUI of browsers will not appear)? [y/N/h/q] ").lower()
+            if headless_choice in ["h", "help"]:
                 help()
                 continue
-
-            if headless_choice == 'q':
+            elif headless_choice in ["q", "quit"]:
                 return None 
+            elif headless_choice in ["y", "yes"]:
+                headless = True
 
             break
 
         except Exception:
-            print("\nOops, something went wrong with your input. Please try again")
+            print("\nOops, something went wrong with your input. Please try again.")
             continue
-
-    if (headless_choice == 'y') or (headless_choice == "yes"):
-        headless = True
-
 
     return headless
 
@@ -509,61 +406,61 @@ def get_output_dir(default_output_dir):
     output_dir = default_output_dir
     while True:
         try:
-            use_default_output_dir = input("\nWould you like to use the default output directory (out/)? [Y/n/h/q]").lower()
-            
-            if use_default_output_dir in ["help", "h"]:
+            use_default_output_dir = input("\nWould you like to use the default output directory (out/)? [Y/n/h/q] ").lower()
+            if use_default_output_dir in ["h", "help"]:
                 help()
                 continue
-
-            if use_default_output_dir in ["quit", "q"]:
+            elif use_default_output_dir in ["q", "quit"]:
                 return None 
+            elif use_default_output_dir not in ["", "y", "yes"]:
+                while True:
+                    print("\nEnter your output directory:\n")
+                    output_dir = input("--->   ")
+                    if output_dir.lower() in ["h", "help"]:
+                        help()
+                        continue
+                    elif output_dir.lower() in ["q", "quit"]:
+                        return None
+                    else:
+                        break
 
             break
         except Exception:
             print("\nOops, something went wrong with your input. Please try again")
             continue
 
-    if use_default_output_dir not in ["yes", "y", ""]:
-        output_dir = input("\nEnter your output directory: ")
-
     return output_dir
 
-# Runs all the UI components and prompts user
-def get_user_input_gui(adlists_dir, default_output_dir):
 
-    print("Welcome to tracker hacker!\n")
-    print("To begin, select your datapoints and url inputs. (Type help for manual, q to quit)\n")
+# Runs all the UI components and prompts user
+def get_user_input_gui(adlists_dir: str, default_output_dir: str) -> TrackerObject.TrackerObject:
+    print("Welcome to Tracker Hacker!\n")
+    print("To begin, follow the prompts to select your inputs (Type h/help for the manual, q/quit to quit).\n")
 
     d = datapoints()
     if d is None:
-        exit()
-
+        return None
+    
     b = browser_choice()
     if b is None:
-        exit()
-
+        return None
+    
     u = urls()
     if u is None:
-        exit()
-
-    #flag, customlist = adtrack_list()
-    #if flag is None or customlist is None:  
-    #    exit()
-
-    if check_adlists(adlists_dir) == None:
-        exit()
+        return None
     
+    if check_adlists(adlists_dir) is None:
+        return None
 
     headless = headless_run()
     if headless is None:
-        exit()
-
+        return None
+    
     output_dir = get_output_dir(default_output_dir)
     if output_dir is None:
-        exit()
+        return None
 
     trackerQuery = TrackerObject.TrackerObject(d, b, u, headless, output_dir)
-
     return trackerQuery
 
 

@@ -22,29 +22,30 @@ TRACKER_HACKER_ROOT = os.path.dirname(sys.argv[0])
 AD_TRACKER_LISTS_DIR = os.path.join(TRACKER_HACKER_ROOT, "adlists")
 DEFAULT_OUTPUT_DIR = "out"
 
-#TODO print msg and exit when no data after each step
-def main() -> None:
+def main() -> int:
     logging.basicConfig(format=LOGGER_FORMAT)
     logger = logging.getLogger("tracker_hacker")
     logger.setLevel(LOGGER_LEVEL)
     
     # 1. parse args
-    
     # Determines what interface to use
     # If user is using command line args, it uses cli run, otherwise it defaults to gui
-    
     if len(sys.argv) > 1:
         tracker_query = userinput.get_userinput_cli(AD_TRACKER_LISTS_DIR, DEFAULT_OUTPUT_DIR)
     else:
         tracker_query = userinput.get_user_input_gui(AD_TRACKER_LISTS_DIR, DEFAULT_OUTPUT_DIR)
 
+    if tracker_query is None:
+        return 0
+    
     # 2. open urls with selenium and capture traffic with web proxy
     # TODO: add absolute timeout and support for browser paths
     logger.debug(tracker_query.browsers)
     logger.info("Start data collection")
     request_urls_data = datacollection.collect_request_urls(logger, tracker_query.query_urls, tracker_query.browsers, PROXY_IP, PROXY_PORT, REQUEST_TIMEOUT, tracker_query.headless)
     if len(request_urls_data) == 0:
-        exit(1)
+        logger.warning("No HTTP requests collected, exiting...")
+        return 1
 
     logger.info("Data collection done!")
     
@@ -52,7 +53,8 @@ def main() -> None:
     logger.info("Extracting ad and tracker data")
     ad_tracker_data = adparsing.extract_ads_and_trackers(logger, AD_TRACKER_LISTS_DIR, request_urls_data)
     if len(ad_tracker_data) == 0:
-        exit(1)
+        logger.warning("No ad or tracker requests found, exiting...")
+        return 1
 
     logger.info("Ads and trackers extracted!")
 
@@ -64,6 +66,10 @@ def main() -> None:
     analysis_query.do_server_location_analysis()
 
     analysis_results = analysis_query.get_results()
+    if len(analysis_results) == 0:
+        logger.warning("No analysis results, exiting...")
+        return 1
+
     print(analysis_results)
     logger.info("Data analyzed!")
     
@@ -86,11 +92,12 @@ def main() -> None:
     output_generator.make_top_sites_graph()
     output_generator.make_top_ads_trackers_graph()
     logger.info("Done!")
+    return 0
 
 
 if __name__ == "__main__":
     try:
-        main()
+        exit(main())
     except KeyboardInterrupt:
         # don't print out stack trace on CTRL+C exit
         pass
