@@ -275,13 +275,14 @@ class Output:
         for source_url, source_url_info in self.analysis_results.items():
             for browser, browser_info in source_url_info.items():
                 for fqdn, fqdn_info in browser_info.items():
-                    first_instance = []
+                    first_instance = True
                     for ip in fqdn_info["ips"]:
-                        if ip not in first_instance:
-                            first_instance.append(ip)
+                        if first_instance:
+                            first_instance = False
                             row = [source_url, browser, fqdn, fqdn_info["ad_tracker_count"], ip]
                         else:
-                            row = [source_url, browser, '-', '-', '-']
+                            row = ['-', '-', '-', '-', ip]
+
                         for server_location_dict in fqdn_info["server_location"]:
                             if server_location_dict["IPv4"] == ip:
                                 current_server_dict = server_location_dict
@@ -293,11 +294,13 @@ class Output:
                                 try:
                                     row.append(self._prettify_output(current_server_dict[analysis_field_name]))
                                 except KeyError:
+                                    row.append(None)
                                     self._logger.warning("No server location key named '%s' in [%s][%s][%s]. Skipping..." %  (analysis_field_name, source_url, browser, fqdn))
                             elif output_field_name.startswith("whois:"):
                                 try:
                                     row.append(self._prettify_output(fqdn_info["whois"][analysis_field_name]))
                                 except KeyError:
+                                    row.append(None)
                                     self._logger.warning("No whois key named '%s' in [%s][%s][%s]. Skipping..." %  (analysis_field_name, source_url, browser, fqdn))
 
                         output_csv.append(row)
