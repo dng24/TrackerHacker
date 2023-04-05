@@ -275,8 +275,13 @@ class Output:
         for source_url, source_url_info in self.analysis_results.items():
             for browser, browser_info in source_url_info.items():
                 for fqdn, fqdn_info in browser_info.items():
+                    first_instance = []
                     for ip in fqdn_info["ips"]:
-                        row = [source_url, browser, fqdn, fqdn_info["ad_tracker_count"], ip]
+                        if ip not in first_instance:
+                            first_instance.append(ip)
+                            row = [source_url, browser, fqdn, fqdn_info["ad_tracker_count"], ip]
+                        else:
+                            row = [source_url, browser, '-', '-', '-']
                         for server_location_dict in fqdn_info["server_location"]:
                             if server_location_dict["IPv4"] == ip:
                                 current_server_dict = server_location_dict
