@@ -279,10 +279,27 @@ class Output:
                                 except KeyError:
                                     self._logger.warning("No server location key named '%s' in [%s][%s][%s]. Skipping..." %  (analysis_field_name, source_url, browser, fqdn))
                             elif output_field_name.startswith("whois:"):
-                                try:
-                                    row.append(fqdn_info["whois"][analysis_field_name])
-                                except KeyError:
-                                    self._logger.warning("No whois key named '%s' in [%s][%s][%s]. Skipping..." %  (analysis_field_name, source_url, browser, fqdn))
+                                if analysis_field_name == "domain_name" or analysis_field_name == "name_servers" or analysis_field_name == "status" or analysis_field_name == "emails":
+                                    try:
+                                        append_string = ""
+                                        for item in fqdn_info["whois"][analysis_field_name]:
+                                            append_string = append_string + item + ","
+                                        row.append(append_string[:-1])
+                                    except:
+                                        self._logger.warning("Stuff")
+                                elif analysis_field_name == "creation_date" or analysis_field_name == "expiration_date":
+                                    try:
+                                        append_string = ""
+                                        for item in fqdn_info["whois"][analysis_field_name]:
+                                            append_string = append_string + str(item) + ","
+                                        row.append(append_string[:-1])
+                                    except:
+                                        self._logger.warning("Things")
+                                else:
+                                    try:
+                                        row.append(fqdn_info["whois"][analysis_field_name])
+                                    except KeyError:
+                                        self._logger.warning("No whois key named '%s' in [%s][%s][%s]. Skipping..." %  (analysis_field_name, source_url, browser, fqdn))
 
                         output_csv.append(row)
 
