@@ -42,8 +42,8 @@ def get_userinput_cli(adlists_dir, default_output_dir):
     parser = argparse.ArgumentParser()
     headless = False
 
-    parser.add_argument("-d", "--data", nargs='*', help="Data types to output. a: Server Location, b: Server Location Coordinates, c: Domain Information, d: Owner Information. For multipe choices, enter them space delimited, eg: -d a b for whois and IP geolocation.", type=str, choices=['a','b','c', 'd'])
-    parser.add_argument("-b", "--browser", nargs='*', help="Which browser to use. 1: Chrome, 2: Firefox, 3: Edge, 4: Brave. For multiple choices, enter them space delimited, eg: 1 2 for Chrome and Firefox", type=int, choices=[1,2,3,4])
+    parser.add_argument("-d", "--data", nargs='*', help="Data types to output. \na: Server Location, \nb: Server Location Coordinates, \nc: Domain Information, \nd: Owner Information, \ne: All data choices. For multipe choices, enter them space delimited, eg: -d a b for whois and IP geolocation.", type=str, choices=['a','b','c', 'd', 'e'])
+    parser.add_argument("-b", "--browser", nargs='*', help="Which browser to use. \n1: Chrome, \n2: Firefox, \n3: Edge, \n4: Brave, \n5: All browsers. For multiple choices, enter them space delimited, eg: 1 2 for Chrome and Firefox", type=int, choices=[1,2,3,4,5])
     parser.add_argument("-uf", "--urlfile", help="File of URLs to analyze. Provide the path of a .txt file with a list of urls, with only a single url per line.")
     parser.add_argument("-u", "--urls", nargs='*', help="URLs to analyze. Manually type urls to analyze, space delimited.")
     parser.add_argument("-hl", "--headless", help="Run program in headless mode. No interface for selenium browser will be launched. Default is non-headless", action='store_true')
@@ -55,11 +55,15 @@ def get_userinput_cli(adlists_dir, default_output_dir):
     # Determines what types of data points the user supplied for -d argument
     if args.data:
         data_choices = []
-        for choice in args.data:
-            if choice in data_choices:
-                continue
-            data_choices.append(choice)
-            datapoints.extend(DATA_CHOICES_MAPPING[choice])
+        if 'e' in args.data:
+            for choice in DATA_CHOICES_MAPPING.values():
+                datapoints.extend(choice)
+        else:
+            for choice in args.data:
+                if choice in data_choices:
+                    continue
+                data_choices.append(choice)
+                datapoints.extend(DATA_CHOICES_MAPPING[choice])
     else:
         for choices in DATA_CHOICES_MAPPING.values():
             datapoints.extend(choices)
@@ -68,15 +72,21 @@ def get_userinput_cli(adlists_dir, default_output_dir):
     if args.browser:
         count = 0
         browsers = []
-        for choice in args.browser:
-            if choice == 1:
-                browsers.append(WebBrowsers.CHROME)
-            if choice == 2:
-                browsers.append(WebBrowsers.FIREFOX)
-            if choice == 3:
-                browsers.append(WebBrowsers.EDGE)
-            if choice == 4:
-                browsers.append(WebBrowsers.BRAVE)
+        if 5 in args.browser:
+            browsers.append(WebBrowsers.CHROME)
+            browsers.append(WebBrowsers.FIREFOX)
+            browsers.append(WebBrowsers.EDGE)
+            browsers.append(WebBrowsers.BRAVE)
+        else:
+            for choice in args.browser:
+                if choice == 1:
+                    browsers.append(WebBrowsers.CHROME)
+                if choice == 2:
+                    browsers.append(WebBrowsers.FIREFOX)
+                if choice == 3:
+                    browsers.append(WebBrowsers.EDGE)
+                if choice == 4:
+                    browsers.append(WebBrowsers.BRAVE)
     else:
         browsers.append(WebBrowsers.FIREFOX)
 
