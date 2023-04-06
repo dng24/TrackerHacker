@@ -392,6 +392,10 @@ def urls():
 
             break
 
+        if len(urls) == 0:
+            print("Your URL file must contain at least one valid URL. Please try again.")
+            quit(0)
+
     return urls
 
     
