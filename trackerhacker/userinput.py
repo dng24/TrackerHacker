@@ -94,14 +94,14 @@ def get_userinput_cli(adlists_dir, default_output_dir):
     # Loads the user specificed file for url lists
     if args.urlfile:
         # Determines if the supplied filepath is valid
-        if pathlib.Path(args.urls).suffix.lower() != '.txt':
+        if pathlib.Path(args.urlfile).suffix.lower() != '.txt':
             print("\nOops! Looks like there was a problem loading your urls file. Please make sure that it is a valid path and a correctly formatted TXT file.")          
         else:    
             count = 0
             malformed = 0
             print("Loading urls:")
             #try:
-            f = open(args.urls, "r")
+            f = open(args.urlfile, "r")
             #except:
             
             # Iterates through the lines of the user supplied file and collects each url, stripping the extra characters off until left with only url
