@@ -143,6 +143,11 @@ def get_userinput_cli(adlists_dir, default_output_dir):
 
         print("\n{} Malformed urls included in your file. Added {} valid urls, continuing...\n".format(malformed, count))
 
+    # If there are no URLs entered, quits out
+    if len(urls) == 0:
+        print("Please enter at least 1 valid URL.")
+        quit()
+
     # Determines if the program will run headless
     if args.headless:
         headless = True
