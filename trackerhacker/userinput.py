@@ -1,4 +1,5 @@
 import argparse
+from argparse import RawTextHelpFormatter
 import os
 import pathlib
 import sys
@@ -39,11 +40,11 @@ def get_userinput_cli(adlists_dir, default_output_dir):
     datapoints = []
     browsers = []
     urls = []
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
     headless = False
 
-    parser.add_argument("-d", "--data", nargs='*', help="Data types to output. \na: Server Location, \nb: Server Location Coordinates, \nc: Domain Information, \nd: Owner Information, \ne: All data choices. For multipe choices, enter them space delimited, eg: -d a b for whois and IP geolocation.", type=str, choices=['a','b','c', 'd', 'e'])
-    parser.add_argument("-b", "--browser", nargs='*', help="Which browser to use. \n1: Chrome, \n2: Firefox, \n3: Edge, \n4: Brave, \n5: All browsers. For multiple choices, enter them space delimited, eg: 1 2 for Chrome and Firefox", type=int, choices=[1,2,3,4,5])
+    parser.add_argument("-d", "--data", nargs='*', help="Data types to output. \n\na: Server Location \nb: Server Location Coordinates \nc: Domain Information \nd: Owner Information \ne: All data choices\n\nFor multipe choices, enter them space delimited, eg: -d a b for Server Location and Server Location Coordinates.", type=str, choices=['a','b','c', 'd', 'e'])
+    parser.add_argument("-b", "--browser", nargs='*', help="Which browser to use. \n\n1: Chrome \n2: Firefox \n3: Edge \n4: Brave \n5: All browsers\n\nFor multiple choices, enter them space delimited, eg: 1 2 for Chrome and Firefox", type=int, choices=[1,2,3,4,5])
     parser.add_argument("-uf", "--urlfile", help="File of URLs to analyze. Provide the path of a .txt file with a list of urls, with only a single url per line.")
     parser.add_argument("-u", "--urls", nargs='*', help="URLs to analyze. Manually type urls to analyze, space delimited.")
     parser.add_argument("-hl", "--headless", help="Run program in headless mode. No interface for selenium browser will be launched. Default is non-headless", action='store_true')
@@ -90,7 +91,7 @@ def get_userinput_cli(adlists_dir, default_output_dir):
     else:
         browsers.append(WebBrowsers.FIREFOX)
 
-    # Loaads the user specificed file for url lists
+    # Loads the user specificed file for url lists
     if args.urlfile:
         # Determines if the supplied filepath is valid
         if pathlib.Path(args.urls).suffix.lower() != '.txt':
