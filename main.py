@@ -21,6 +21,7 @@ TRACKER_HACKER_ROOT = os.path.dirname(sys.argv[0])
 AD_TRACKER_LISTS_DIR = os.path.join(TRACKER_HACKER_ROOT, "adlists")
 DEFAULT_OUTPUT_DIR = "out"
 
+
 class ColorFormatter(logging.Formatter):
     green = "\x1b[32m"
     purple = "\x1b[35m"
@@ -66,7 +67,6 @@ def main() -> int:
     
     # 2. open urls with selenium and capture traffic with web proxy
     # TODO: add absolute timeout and support for browser paths
-    logger.debug(tracker_query.browsers)
     logger.info("Start data collection")
     request_urls_data = datacollection.collect_request_urls(logger, tracker_query.query_urls, tracker_query.browsers, PROXY_IP, PROXY_PORT, REQUEST_TIMEOUT, tracker_query.headless)
     if len(request_urls_data) == 0:
@@ -96,22 +96,11 @@ def main() -> int:
         logger.warning("No analysis results, exiting...")
         return 1
 
-    logger.debug(analysis_results)
     logger.info("Data analyzed!")
     
-    #import json
-    #with open("ana2.json", "w") as f:
-    #    obj = json.dumps(analysis_results, default=str)
-    #    json.dump(obj, f)
-
-    #with open("ana_foxnews.json", "r") as f:
-    #    analysis_results = json.load(f)
-
     # 5. make visualizations/reports
     logger.info("Generating outputs")
     output_generator = output.Output(logger, TRACKER_HACKER_ROOT, analysis_results, tracker_query.datapoints, tracker_query.output_dir)
-    #from trackerhacker.TrackerObject import DataChoices
-    #output_generator = output.Output(logger, TRACKER_HACKER_ROOT, analysis_results, [DataChoices.SERVER_STATE], "out")
     output_generator.make_csv_output()
     output_generator.make_heatmap()
     output_generator.make_brower_comparison()

@@ -9,7 +9,7 @@ def _get_ad_tracker_rules(logger, ad_tracker_lists_dir: str) -> list:
             filepath = os.path.join(ad_tracker_lists_dir, filename)
             if filename.endswith(".txt") and os.path.isfile(filepath):
                 try:
-                    with open(filepath, "r") as f:
+                    with open(filepath, "r", encoding="utf-8") as f:
                         raw_rules.extend(f.readlines())
                 except PermissionError:
                     logger.warning("Permission denied: '%s'. Please check that the file has read permission. Skipping....." % filepath)
@@ -59,6 +59,5 @@ def extract_ads_and_trackers(logger, ad_tracker_lists_dir: str, collected_reques
 
     collected_request_urls = {i: k for i, k in collected_request_urls.items() if k}
 
-    logger.debug("AD AND TRACKER URLS: %s" % collected_request_urls)
     logger.info("Processed %d ad/tracker URLs, %d total URLs" % (num_ad_tracker_urls, total_urls))
     return collected_request_urls

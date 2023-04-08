@@ -1,9 +1,11 @@
 import argparse
-from argparse import RawTextHelpFormatter
 import os
 import pathlib
 import sys
 import validators
+
+from argparse import RawTextHelpFormatter
+
 
 from trackerhacker.browsermanager import WebBrowsers
 from trackerhacker import TrackerObject
@@ -420,6 +422,7 @@ def headless_run():
             continue
 
     return headless
+
 
 # Determines the ouptut directory where the output graphics and csv will be put
 def get_output_dir(default_output_dir):

@@ -10,6 +10,7 @@ from mitmproxy.tools.dump import DumpMaster
 from trackerhacker import browsermanager
 from trackerhacker import webproxy
 
+
 def collect_request_urls(logger, urls: list, browsers: list, proxy_ip: str="127.0.0.1", proxy_port: int=8080, request_timeout: int=5, headless: bool=False) -> dict:
     # results: each url contains dict of browsers, which contains dict of fqdns, which contains dict of full request url to number request made to that url
     results = {}
@@ -77,7 +78,6 @@ def collect_request_urls(logger, urls: list, browsers: list, proxy_ip: str="127.
             logger.warning("'%'s had no requests. Excluding from results....." % url)
             del results[url]
 
-
     logger.debug("shutting down proxy")
     proxy.shutdown_proxy()
     os.environ["http_proxy"] = ""
@@ -86,7 +86,6 @@ def collect_request_urls(logger, urls: list, browsers: list, proxy_ip: str="127.
     os.environ["HTTP_PROXY"] = ""
     os.environ["HTTPS_PROXY"] = ""
     os.environ["NO_PROXY"] = ""
-    logger.debug("DATA COLLECTION RESULTS: %s" % results)
     return results
 
 

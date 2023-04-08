@@ -1,13 +1,13 @@
 import dns.resolver
-import logging
 import json
+import logging
+import numpy as np
+import os
+import pandas as pd
+import pickle
 import requests
 import whois
-import numpy as np
-import pandas as pd
-import ipaddress
-import pickle
-import os
+
 
 class Analysis:
     def __init__(self, logger, ad_tracker_data_dict: dict, root_directory: str, initial_results={}) -> None:
