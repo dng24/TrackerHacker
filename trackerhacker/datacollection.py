@@ -46,7 +46,6 @@ def collect_request_urls(logger, urls: list, browsers: list, proxy_ip: str="127.
 
             time.sleep(2)
             proxy.collect_data()
-            driver.get(url)
             try:
                 driver.get(url)
             except selenium.common.exceptions.WebDriverException:
@@ -75,7 +74,7 @@ def collect_request_urls(logger, urls: list, browsers: list, proxy_ip: str="127.
                 results[url][browser.value] = fqdns
 
         if len(results[url]) == 0:
-            logger.warning("'%'s had no requests. Excluding from results....." % url)
+            logger.warning("'%s' had no requests. Excluding from results....." % url)
             del results[url]
 
     logger.debug("shutting down proxy")

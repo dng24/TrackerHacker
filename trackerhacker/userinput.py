@@ -324,6 +324,10 @@ def urls():
                     continue
                 elif user_input.lower() in ["q", "quit"]:
                     return None
+                
+                if user_input in urls:
+                    print("'%s' already inputted. Please choose another URL.\n" % user_input)
+                    continue
 
                 if validators.url(str(user_input)):
                     urls.append(user_input)
@@ -375,6 +379,10 @@ def urls():
             count = 0
             malformed = 0
             for url in f:
+                if url in urls:
+                    print("'%s' already entered. Skipping..." % url)
+                    continue
+
                 try:
                     if validators.url(str(url.strip())):
                         print("[{}]: {}".format(count, url.strip()))
