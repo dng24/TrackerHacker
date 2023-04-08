@@ -11,7 +11,7 @@ from trackerhacker import browsermanager
 from trackerhacker import webproxy
 
 
-def collect_request_urls(logger, urls: list, browsers: list, proxy_ip: str="127.0.0.1", proxy_port: int=8080, request_timeout: int=5, headless: bool=False) -> dict:
+def collect_request_urls(logger, urls: list, browsers: list, proxy_ip: str="127.0.0.1", proxy_port: int=8080, request_timeout: int=5, absolute_timeout: int=300, headless: bool=False) -> dict:
     # results: each url contains dict of browsers, which contains dict of fqdns, which contains dict of full request url to number request made to that url
     results = {}
 
@@ -27,7 +27,7 @@ def collect_request_urls(logger, urls: list, browsers: list, proxy_ip: str="127.
     os.environ["HTTPS_PROXY"] = "http://%s:%d" % (proxy_ip, proxy_port)
     os.environ["NO_PROXY"] = "localhost,127.0.0.1,::1"
 
-    proxy = webproxy.Proxy(logger, request_timeout)
+    proxy = webproxy.Proxy(logger, request_timeout, absolute_timeout)
     logger.info("Starting proxy")
     # launch proxy in background
     t = threading.Thread(target=_start_proxy_launcher, args=(proxy, proxy_ip, proxy_port))

@@ -17,6 +17,7 @@ LOGGER_LEVEL = logging.DEBUG
 PROXY_IP = "127.0.0.1"
 PROXY_PORT = 8080
 REQUEST_TIMEOUT = 5
+ABSOLUTE_TIMEOUT = 300
 TRACKER_HACKER_ROOT = os.path.dirname(sys.argv[0])
 AD_TRACKER_LISTS_DIR = os.path.join(TRACKER_HACKER_ROOT, "adlists")
 DEFAULT_OUTPUT_DIR = "out"
@@ -68,7 +69,7 @@ def main() -> int:
     # 2. open urls with selenium and capture traffic with web proxy
     # TODO: add absolute timeout and support for browser paths
     logger.info("Start data collection")
-    request_urls_data = datacollection.collect_request_urls(logger, tracker_query.query_urls, tracker_query.browsers, PROXY_IP, PROXY_PORT, REQUEST_TIMEOUT, tracker_query.headless)
+    request_urls_data = datacollection.collect_request_urls(logger, tracker_query.query_urls, tracker_query.browsers, PROXY_IP, PROXY_PORT, REQUEST_TIMEOUT, ABSOLUTE_TIMEOUT, tracker_query.headless)
     if len(request_urls_data) == 0:
         logger.warning("No HTTP requests collected, exiting...")
         return 1
