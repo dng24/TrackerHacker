@@ -1,4 +1,3 @@
-import dns.resolver
 import json
 import logging
 import numpy as np
@@ -8,9 +7,12 @@ import pickle
 import requests
 import whois
 
+from dns import exception, resolver
+from logging import Logger
+
 
 class Analysis:
-    def __init__(self, logger, ad_tracker_data_dict: dict, root_directory: str, initial_results={}) -> None:
+    def __init__(self, logger: Logger, ad_tracker_data_dict: dict, root_directory: str, initial_results: dict={}) -> None:
         self._logger = logger
         self.root_directory = root_directory
         self.results = initial_results
@@ -25,9 +27,23 @@ class Analysis:
 
     def _get_ips(self, fqdn: str) -> list:
         fqdn_ips = []
-        answers = dns.resolver.resolve(fqdn, 'A')
-        for a in answers:
-            fqdn_ips.append(str(a))
+        tries = 0
+        while True:
+            try:
+                answers = resolver.resolve(fqdn, 'A')
+                for a in answers:
+                    fqdn_ips.append(str(a))
+                
+                break
+            except resolver.LifetimeTimeout:
+                if tries > 4:
+                    self._logger.warning("Unable to resolve '%s'" % fqdn)
+                    break
+                else:
+                    tries += 1
+            except exception.DNSException:
+                self._logger.warning("Unable to resolve '%s'" % fqdn)
+                break
 
         return fqdn_ips
     

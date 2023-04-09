@@ -1,9 +1,10 @@
 import os
-import selenium
 import sys
 
 from enum import Enum
+from logging import Logger
 from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.chrome.service import Service as ChromiumService
 from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.webdriver.firefox.service import Service as FirefoxService
@@ -27,7 +28,7 @@ class WebBrowsers(Enum):
 
 
 class WebDrivers:
-    def __init__(self, logger) -> None:
+    def __init__(self, logger: Logger) -> None:
         self._logger = logger
         self.driver_paths: str = {}
 
@@ -60,7 +61,7 @@ class WebDrivers:
                 if browser_path is not None:
                     opts.binary_location = browser_path
 
-                driver = webdriver.Chrome(service=ChromiumService(self.driver_paths[WebBrowsers.CHROME]), chrome_options=opts)
+                driver = webdriver.Chrome(service=ChromiumService(self.driver_paths[WebBrowsers.CHROME]), chrome_options=opts, service_log_path=os.path.devnull)
             elif browser == WebBrowsers.FIREFOX:
                 # setup firefox proxy
                 opts = webdriver.FirefoxOptions()
@@ -74,7 +75,7 @@ class WebDrivers:
                 if browser_path is not None:
                     opts.binary_location = browser_path
 
-                driver = webdriver.Firefox(options=opts, service=FirefoxService((self.driver_paths[WebBrowsers.FIREFOX])))
+                driver = webdriver.Firefox(options=opts, service=FirefoxService((self.driver_paths[WebBrowsers.FIREFOX])), service_log_path=os.path.devnull)
             elif browser == WebBrowsers.EDGE:
                 opts = webdriver.EdgeOptions()
                 if headless:
@@ -83,7 +84,7 @@ class WebDrivers:
                 if browser_path is not None:
                     opts.binary_location = browser_path
                 
-                driver = webdriver.Edge(service=EdgeService(self.driver_paths[WebBrowsers.EDGE]), options=opts)
+                driver = webdriver.Edge(service=EdgeService(self.driver_paths[WebBrowsers.EDGE]), options=opts, service_log_path=os.path.devnull)
             elif browser == WebBrowsers.BRAVE:
                 opts = webdriver.ChromeOptions()
                 if headless:
@@ -103,8 +104,8 @@ class WebDrivers:
                     self._logger.error("Unable to find Brave; please pass in the path to Brave.")
                     return driver
 
-                driver = webdriver.Chrome(service=ChromiumService(self.driver_paths[WebBrowsers.BRAVE]), chrome_options=opts)
-        except selenium.common.exceptions.WebDriverException:
+                driver = webdriver.Chrome(service=ChromiumService(self.driver_paths[WebBrowsers.BRAVE]), chrome_options=opts, service_log_path=os.path.devnull)
+        except WebDriverException:
             self._logger.error("Unable to open %s. Make sure:\n\t- You are connected to the Internet\n\t- %s is installed\n\t- %s is updated to the latest version\nAlternatively, try passing in the path to %s." % (browser.value, browser.value, browser.value, browser.value))
 
         return driver

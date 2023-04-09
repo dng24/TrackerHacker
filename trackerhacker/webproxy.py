@@ -1,12 +1,14 @@
 import threading
 import time
 
+from logging import Logger
+
 from mitmproxy import ctx, http
 
 
 class Proxy:
     
-    def __init__(self, logger, request_timeout: int=5, absolute_timeout: int=300) -> None:
+    def __init__(self, logger: Logger, request_timeout: int=5, absolute_timeout: int=300) -> None:
         self._logger = logger
         self.fqdns = {}
         self.request_made_since_last_check = True
@@ -29,7 +31,7 @@ class Proxy:
         while self.request_made_since_last_check:
             if time.time() - start_time > absolute_timeout:
                 break
-            
+
             self.request_made_since_last_check = False
             time.sleep(request_timeout)
 
@@ -42,7 +44,10 @@ class Proxy:
 
 
     def shutdown_proxy(self) -> None:
-        ctx.master.shutdown()
+        try:
+            ctx.master.shutdown()
+        except Exception as e:
+            self._logger.warning(e)
 
 
     def get_fqdns(self) -> dict:

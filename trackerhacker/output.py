@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 
 from datetime import datetime
 from enum import Enum
+from logging import Logger
 from typing import Any
 
 from trackerhacker.userinput import DataChoices
@@ -18,7 +19,7 @@ class Entity(Enum):
 
 
 class Output:
-    def __init__(self, logger, tracker_hacker_root, analysis_results: dict, output_choices: list[DataChoices], output_dir: str) -> None:
+    def __init__(self, logger: Logger, tracker_hacker_root, analysis_results: dict, output_choices: list[DataChoices], output_dir: str) -> None:
         self._logger = logger
         self.analysis_results = analysis_results
         self.output_choices = output_choices
@@ -74,7 +75,7 @@ class Output:
                     hover_text_fqnds.append("%d more FQDN%s....." % (extra_fqdns, plural))
                     break
 
-                plural = "s" if fqdn != 1 else ""
+                plural = "s" if num_requests != 1 else ""
                 hover_text_fqnds.append("%s: %d ad/tracker request%s" % (fqdn, num_requests, plural))
                 i += 1
 
@@ -129,6 +130,7 @@ class Output:
             fig = self._make_heatmap_figure(heatmap_data, "ISO-3")
             fig.update_layout(
                 title_text="World Heatmap of Ads/Trackers for %s" % browser,
+                title_x=0.5,
                 geo=dict(
                     showframe=False,
                     showcoastlines=False,
@@ -146,6 +148,7 @@ class Output:
             fig = self._make_heatmap_figure(heatmap_data, "USA-states")
             fig.update_layout(
                 title_text="USA Heatmap of Ads/Trackers for %s" % browser,
+                title_x=0.5,
                 geo = dict(
                     scope="usa",
                     projection=go.layout.geo.Projection(type="albers usa")
@@ -211,6 +214,15 @@ class Output:
             
             data = px.bar(df_browser_ad_tracker_rankings, x="Source URL", y="Number of Ad/Tracker Requests")
             data.update_layout(title_text=f"{browser} Sites With the Most Ads/Trackers Requests", title_x=0.5)
+            
+            x_axis_labels = []
+            for url in df_browser_ad_tracker_rankings["Source URL"]:
+                if len(url) > 30:
+                    x_axis_labels.append(url[:30] + "...")
+                else:
+                    x_axis_labels.append(url)
+
+            data.update_xaxes(tickvals=list(range(10)), ticktext=x_axis_labels)
             output_path = os.path.join(self.output_dir, f"{browser}_top_ten.html")
             plotly.offline.plot(data, filename=output_path)
             self._logger.info("Plot written to '%s'" % output_path)
@@ -251,7 +263,7 @@ class Output:
             plotly.offline.plot(data, filename=output_path)
             self._logger.info("Plot written to '%s'" % output_path)
 
-    def _prettify_output(self, output: Any) -> str:
+    def _prettify_output(self, output: Any) -> str | None:
         if output is None:
             prettified_output = None
         elif type(output) == list:
@@ -262,6 +274,37 @@ class Output:
             prettified_output = str(output)
 
         return prettified_output
+    
+    def _make_csv_row(self, source_url: str, browser: str, fqdn: str, fqdn_info: dict, ip: str, first_instance: bool) -> list[str]:
+        row = []
+        if first_instance:
+            row = [source_url, browser, fqdn, fqdn_info["ad_tracker_count"], ip]
+        else:
+            row = ['-', '-', '-', '-', ip]
+
+        current_server_dict = {}
+        for server_location_dict in fqdn_info["server_location"]:
+            if server_location_dict["IPv4"] == ip:
+                current_server_dict = server_location_dict
+                break
+
+        for output_choice in self.output_choices:
+            analysis_field_name = output_choice.value["analysis_name"]
+            output_field_name = output_choice.value["output_name"]
+            if output_field_name.startswith("server:"):
+                try:
+                    row.append(self._prettify_output(current_server_dict[analysis_field_name]))
+                except KeyError:
+                    row.append(None)
+                    self._logger.warning("No server location key named '%s' in [%s][%s][%s]. Skipping..." %  (analysis_field_name, source_url, browser, fqdn))
+            elif output_field_name.startswith("whois:"):
+                try:
+                    row.append(self._prettify_output(fqdn_info["whois"][analysis_field_name]))
+                except KeyError:
+                    row.append(None)
+                    self._logger.warning("No whois key named '%s' in [%s][%s][%s]. Skipping..." %  (analysis_field_name, source_url, browser, fqdn))
+
+        return row
 
     def make_csv_output(self) -> None:
         self._logger.info("Making CSV output...")
@@ -276,34 +319,12 @@ class Output:
             for browser, browser_info in source_url_info.items():
                 for fqdn, fqdn_info in browser_info.items():
                     first_instance = True
+                    if len(fqdn_info["ips"]) == 0:
+                        output_csv.append(self._make_csv_row(source_url, browser, fqdn, fqdn_info, None, first_instance))
+
                     for ip in fqdn_info["ips"]:
-                        if first_instance:
-                            first_instance = False
-                            row = [source_url, browser, fqdn, fqdn_info["ad_tracker_count"], ip]
-                        else:
-                            row = ['-', '-', '-', '-', ip]
-
-                        for server_location_dict in fqdn_info["server_location"]:
-                            if server_location_dict["IPv4"] == ip:
-                                current_server_dict = server_location_dict
-
-                        for output_choice in self.output_choices:
-                            analysis_field_name = output_choice.value["analysis_name"]
-                            output_field_name = output_choice.value["output_name"]
-                            if output_field_name.startswith("server:"):
-                                try:
-                                    row.append(self._prettify_output(current_server_dict[analysis_field_name]))
-                                except KeyError:
-                                    row.append(None)
-                                    self._logger.warning("No server location key named '%s' in [%s][%s][%s]. Skipping..." %  (analysis_field_name, source_url, browser, fqdn))
-                            elif output_field_name.startswith("whois:"):
-                                try:
-                                    row.append(self._prettify_output(fqdn_info["whois"][analysis_field_name]))
-                                except KeyError:
-                                    row.append(None)
-                                    self._logger.warning("No whois key named '%s' in [%s][%s][%s]. Skipping..." %  (analysis_field_name, source_url, browser, fqdn))
-
-                        output_csv.append(row)
+                        output_csv.append(self._make_csv_row(source_url, browser, fqdn, fqdn_info, ip, first_instance))
+                        first_instance = False
 
         output_csv_filepath = os.path.join(self.output_dir, "output.csv")
         try:

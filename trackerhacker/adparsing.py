@@ -1,8 +1,10 @@
 import braveblock
 import os
 
+from logging import Logger
 
-def _get_ad_tracker_rules(logger, ad_tracker_lists_dir: str) -> list:
+
+def _get_ad_tracker_rules(logger: Logger, ad_tracker_lists_dir: str) -> list:
     raw_rules = []
     try:
         for filename in os.listdir(ad_tracker_lists_dir):
