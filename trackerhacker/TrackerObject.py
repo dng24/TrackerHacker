@@ -4,7 +4,7 @@ from enum import Enum
 OUTPUT_KEY = "output_name"
 ANALYSIS_KEY = "analysis_name"
 
-
+#Class that tracker hacker uses to define possible user data choices
 class DataChoices(Enum):
     SERVER_COUNTRY_CODE = {OUTPUT_KEY: "server:country_code", ANALYSIS_KEY: "country_code"}
     SERVER_COUNTRY_NAME = {OUTPUT_KEY: "server:country_name", ANALYSIS_KEY: "country_name"}
@@ -32,7 +32,7 @@ class DataChoices(Enum):
     WHOIS_REGISTRANT_POSTAL_CODE = {OUTPUT_KEY: "whois:registrant_postal_code", ANALYSIS_KEY: "registrant_postal_code"}
     EMAILS = {OUTPUT_KEY: "whois:emails", ANALYSIS_KEY: "emails"}
 
-
+#Object that stores user choices when running the program
 class TrackerObject:
     def __init__(self, datapoints, browsers, query_urls, headless, output_dir):
         self.datapoints = datapoints

@@ -102,9 +102,7 @@ def get_userinput_cli(adlists_dir, default_output_dir):
             count = 0
             malformed = 0
             print("Loading urls:")
-            #try:
             f = open(args.urlfile, "r")
-            #except:
             
             # Iterates through the lines of the user supplied file and collects each url, stripping the extra characters off until left with only url
             for url in f:

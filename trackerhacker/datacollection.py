@@ -12,6 +12,7 @@ from trackerhacker import browsermanager
 from trackerhacker import webproxy
 
 
+#Collects all of the data and aggregates it into a data store
 def collect_request_urls(logger: Logger, urls: list, browsers: list, proxy_ip: str="127.0.0.1", proxy_port: int=8080, request_timeout: int=5, absolute_timeout: int=300, headless: bool=False) -> dict:
     # results: each url contains dict of browsers, which contains dict of fqdns, which contains dict of full request url to number request made to that url
     results = {}
@@ -21,6 +22,7 @@ def collect_request_urls(logger: Logger, urls: list, browsers: list, proxy_ip: s
         if not webdrivers.download_driver(browser):
             return None
 
+    #Sets environmental os variables
     os.environ["http_proxy"] = "http://%s:%d" % (proxy_ip, proxy_port)
     os.environ["https_proxy"] = "http://%s:%d" % (proxy_ip, proxy_port)
     os.environ["no_proxy"] = "localhost,127.0.0.1,::1"
@@ -29,6 +31,7 @@ def collect_request_urls(logger: Logger, urls: list, browsers: list, proxy_ip: s
     os.environ["NO_PROXY"] = "localhost,127.0.0.1,::1"
 
     logger.info("Starting proxy")
+
     proxy = webproxy.Proxy(logger, request_timeout, absolute_timeout)
     try:
         # launch proxy in background
@@ -54,7 +57,7 @@ def collect_request_urls(logger: Logger, urls: list, browsers: list, proxy_ip: s
                 except WebDriverException:
                     logger.error("Unable to connect to '%s'. This may be because\n\t- There is no internet connection\n\t- The browser has been closed\n\t- The URL is not valid" % url)
                     try:
-                        driver.close()
+                        driver.quit()
                     except WebDriverException:
                         pass
                     
@@ -66,7 +69,7 @@ def collect_request_urls(logger: Logger, urls: list, browsers: list, proxy_ip: s
 
                 logger.debug("closing webpage")
                 try:
-                    driver.close()
+                    driver.quit()
                 except WebDriverException:
                     pass
 
@@ -94,11 +97,11 @@ def collect_request_urls(logger: Logger, urls: list, browsers: list, proxy_ip: s
     os.environ["NO_PROXY"] = ""
     return results
 
-
+#Initiaties the asyncio proxy launcher
 def _start_proxy_launcher(proxy: webproxy.Proxy, host: str, port: int) -> None:
     asyncio.run(_start_proxy(proxy, host, port))
 
-
+#Starts the web proxy
 async def _start_proxy(proxy: webproxy.Proxy, host: str, port: int):
     opts = main.options.Options(listen_host=host, listen_port=port)
     master = DumpMaster(options=opts, with_termlog=False, with_dumper=False)

@@ -3,7 +3,7 @@ import os
 
 from logging import Logger
 
-
+#Method or identifying the ad tracker rules and which rules to run the analysis on
 def _get_ad_tracker_rules(logger: Logger, ad_tracker_lists_dir: str) -> list:
     raw_rules = []
     try:
@@ -31,7 +31,7 @@ def _get_ad_tracker_rules(logger: Logger, ad_tracker_lists_dir: str) -> list:
 
     return raw_rules
 
-
+#Method to extract the ads and tracker urls from the normal web traffic urls
 def extract_ads_and_trackers(logger, ad_tracker_lists_dir: str, collected_request_urls: dict) -> dict:
     raw_rules = _get_ad_tracker_rules(logger, ad_tracker_lists_dir)
     if len(raw_rules) == 0:
@@ -41,6 +41,7 @@ def extract_ads_and_trackers(logger, ad_tracker_lists_dir: str, collected_reques
     adblocker = braveblock.Adblocker(rules=raw_rules)
     num_ad_tracker_urls = 0
     total_urls = 0
+    #Iterates through data collected to identify new ads an trackers and add them to a custom data store
     for source_url, source_url_info in collected_request_urls.items():
         for browser, browser_info in source_url_info.items():
             for fqdn, fqdn_info in browser_info.items():
