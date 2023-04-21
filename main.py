@@ -22,7 +22,7 @@ TRACKER_HACKER_ROOT = os.path.dirname(sys.argv[0])
 AD_TRACKER_LISTS_DIR = os.path.join(TRACKER_HACKER_ROOT, "adlists")
 DEFAULT_OUTPUT_DIR = "out"
 
-
+#Formatting class for log coloring
 class ColorFormatter(logging.Formatter):
     green = "\x1b[32m"
     purple = "\x1b[35m"
@@ -33,6 +33,7 @@ class ColorFormatter(logging.Formatter):
     clear = "\x1b[0m"
     LOGGER_FORMAT = "{green}[TRACKER HACKER] {purple}%(levelname)-8s: {color}%(message)s{clear}"
 
+    #Format object for color differentiation
     FORMATS = {
         logging.DEBUG: LOGGER_FORMAT.format(green=green, purple=purple, color=blue, clear=clear),
         logging.INFO: LOGGER_FORMAT.format(green=green, purple=purple, color=clear, clear=clear),
@@ -41,12 +42,13 @@ class ColorFormatter(logging.Formatter):
         logging.CRITICAL: LOGGER_FORMAT.format(green=green, purple=purple, color=bold_red, clear=clear)
     }
 
+    #Method to formaat the logs for standardized and visually appealing output/logs
     def format(self, log: str) -> str:
         log_fmt = self.FORMATS.get(log.levelno)
         formatter = logging.Formatter(log_fmt)
         return formatter.format(log)
     
-
+#Main logic method of the tracker hacker program
 def main() -> int:
     logger = logging.getLogger("tracker_hacker")
     logger.setLevel(LOGGER_LEVEL)
@@ -67,7 +69,6 @@ def main() -> int:
         return 0
     
     # 2. open urls with selenium and capture traffic with web proxy
-    # TODO: add absolute timeout and support for browser paths
     logger.info("Start data collection")
     request_urls_data = datacollection.collect_request_urls(logger, tracker_query.query_urls, tracker_query.browsers, PROXY_IP, PROXY_PORT, REQUEST_TIMEOUT, ABSOLUTE_TIMEOUT, tracker_query.headless)
     if len(request_urls_data) == 0:
@@ -88,7 +89,6 @@ def main() -> int:
     # 4. use ad/tracking domain names to get data we want
     logger.info("Analyzing data")
     analysis_query = analysis.Analysis(logger, ad_tracker_data, TRACKER_HACKER_ROOT)
-    #TODO opmitize by not running unnecessary analyses
     analysis_query.do_whois_analysis()
     analysis_query.do_server_location_analysis()
 
