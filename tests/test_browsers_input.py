@@ -10,8 +10,10 @@ from unittest import TestCase
 from unittest import skip
 
 class TestBrowsersInput(TestCase):
+    # Test class for verifying that the browser selection works properly
     @mock.patch('userinput.input', create=True)
     def test_browsers(self, mocked_input):
+        # Test class for verifying that each choice functions correctly
         browser_inputs = [
             'a',
             'b',
@@ -23,3 +25,10 @@ class TestBrowsersInput(TestCase):
             mocked_input.side_effect = browser_input
             result = userinput.browser_choice()
             self.assertEqual(result, [results_dict[browser_input]])
+
+    @mock.patch('userinput.input', create=True)
+    def test_all_browsers(self, mocked_input):
+        # Test class for verifying that the 'select all browsers' function works correctly
+        mocked_input.side_effect = 'e'
+        result = userinput.browser_choice()
+        self.assertEqual(result, [WebBrowsers.CHROME, WebBrowsers.FIREFOX, WebBrowsers.EDGE, WebBrowsers.BRAVE])

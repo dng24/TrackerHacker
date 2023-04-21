@@ -9,6 +9,8 @@ from unittest import TestCase
 from unittest import skip
 
 class TestUIHelpQuitJunk(TestCase):
+    # Test class for verifying that the user can quit at each possible point in the UI
+    # Also tests for random junk input to ensure the program handles it smoothly
     @mock.patch('userinput.input', create=True)
     def test_datapoints_quit(self, mocked_input):
         possible_entry_quits = [

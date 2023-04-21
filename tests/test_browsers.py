@@ -9,6 +9,7 @@ import logging
 logger = logging.getLogger('tracker_hacker')
 
 class TestBrowsers(TestCase):
+    # Test class for verifying that each browser can correctly collect data on each URL provided
     def test_chrome(self):
         urls = [
             'http://www.duckduckgo.com',
