@@ -51,7 +51,7 @@ class Proxy:
             self._logger.warning(e)
 
     #Method that returns collected fqdsn
-    def get_fqdns(self) -> dict:
+    def get_fqdns(self) -> dict[str, dict[str, int]]:
         return self.fqdns
 
     #Request method

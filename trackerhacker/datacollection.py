@@ -8,16 +8,17 @@ from mitmproxy.tools import main
 from mitmproxy.tools.dump import DumpMaster
 from selenium.common.exceptions import WebDriverException
 
-from trackerhacker import browsermanager
-from trackerhacker import webproxy
+from trackerhacker.browsermanager import WebBrowsers
+from trackerhacker.browsermanager import WebDrivers
+from trackerhacker.webproxy import Proxy
 
 
 #Collects all of the data and aggregates it into a data store
-def collect_request_urls(logger: Logger, urls: list, browsers: list, proxy_ip: str="127.0.0.1", proxy_port: int=8080, request_timeout: int=5, absolute_timeout: int=300, headless: bool=False) -> dict:
+def collect_request_urls(logger: Logger, urls: list[str], browsers: list[WebBrowsers], proxy_ip: str="127.0.0.1", proxy_port: int=8080, request_timeout: int=5, absolute_timeout: int=300, headless: bool=False) -> dict[str, dict[str, dict[str, dict[str, int]]]]:
     # results: each url contains dict of browsers, which contains dict of fqdns, which contains dict of full request url to number request made to that url
     results = {}
 
-    webdrivers = browsermanager.WebDrivers(logger)
+    webdrivers = WebDrivers(logger)
     for browser in browsers:
         if not webdrivers.download_driver(browser):
             return None
@@ -32,7 +33,7 @@ def collect_request_urls(logger: Logger, urls: list, browsers: list, proxy_ip: s
 
     logger.info("Starting proxy")
 
-    proxy = webproxy.Proxy(logger, request_timeout, absolute_timeout)
+    proxy = Proxy(logger, request_timeout, absolute_timeout)
     try:
         # launch proxy in background
         t = threading.Thread(target=_start_proxy_launcher, args=(proxy, proxy_ip, proxy_port))
@@ -98,11 +99,11 @@ def collect_request_urls(logger: Logger, urls: list, browsers: list, proxy_ip: s
     return results
 
 #Initiaties the asyncio proxy launcher
-def _start_proxy_launcher(proxy: webproxy.Proxy, host: str, port: int) -> None:
+def _start_proxy_launcher(proxy: Proxy, host: str, port: int) -> None:
     asyncio.run(_start_proxy(proxy, host, port))
 
 #Starts the web proxy
-async def _start_proxy(proxy: webproxy.Proxy, host: str, port: int):
+async def _start_proxy(proxy: Proxy, host: str, port: int) -> DumpMaster:
     opts = main.options.Options(listen_host=host, listen_port=port)
     master = DumpMaster(options=opts, with_termlog=False, with_dumper=False)
     master.addons.add(proxy)

@@ -1,5 +1,4 @@
 import json
-import logging
 import numpy as np
 import os
 import pandas as pd
@@ -9,26 +8,27 @@ import whois
 
 from dns import exception, resolver
 from logging import Logger
+from whois import WhoisEntry
+
 
 #Analysis class for use in analyzin collected web traffic to sift out ads and trackers 
 class Analysis:
     
     #Initialization method
-    def __init__(self, logger: Logger, ad_tracker_data_dict: dict, root_directory: str, initial_results: dict={}) -> None:
+    def __init__(self, logger: Logger, ad_tracker_data_dict: dict[str, dict[str, dict[str, dict[str, int]]]], root_directory: str) -> None:
         self._logger = logger
         self.root_directory = root_directory
-        self.results = initial_results
-        if not initial_results:
-            for source_url, source_url_info in ad_tracker_data_dict.items():
-                self.results[source_url] = {}
-                for browser, browser_info in source_url_info.items():
-                    self.results[source_url][browser] = {}
-                    for fqdn, fqdn_info in browser_info.items():
-                        total_ad_tracker_requests = sum(fqdn_info.values())
-                        self.results[source_url][browser][fqdn] = {"ips": self._get_ips(fqdn), "ad_tracker_count": total_ad_tracker_requests}
+        self.results: dict[str, dict[str, dict[str, dict[str, list[str] | int | WhoisEntry | list[dict[str, str | None]]]]]] = {}
+        for source_url, source_url_info in ad_tracker_data_dict.items():
+            self.results[source_url] = {}
+            for browser, browser_info in source_url_info.items():
+                self.results[source_url][browser] = {}
+                for fqdn, fqdn_info in browser_info.items():
+                    total_ad_tracker_requests = sum(fqdn_info.values())
+                    self.results[source_url][browser][fqdn] = {"ips": self._get_ips(fqdn), "ad_tracker_count": total_ad_tracker_requests}
 
     #Collects the ips of all collected fqdns
-    def _get_ips(self, fqdn: str) -> list:
+    def _get_ips(self, fqdn: str) -> list[str]:
         fqdn_ips = []
         tries = 0
         while True:
@@ -51,7 +51,7 @@ class Analysis:
         return fqdn_ips
     
     #Returns the result attribute of the analysis object
-    def get_results(self) -> dict:
+    def get_results(self) -> dict[str, dict[str, dict[str, dict[str, list[str] | int | WhoisEntry | list[dict[str, str | None]]]]]]:
         return self.results
 
     #Perfoms the whois analysis on collected fqdns
@@ -95,20 +95,6 @@ class Analysis:
                             results.append(geolocation_cache[ip])
                             continue
 
-                        """
-                        range_found = False
-                        ip_ipaddress = ipaddress.ip_address(ip)
-                        for cidr in dbip_df.index.values.tolist():
-                            cidr_network = ipaddress.ip_network(cidr)
-                            if ip_ipaddress in cidr_network:
-                                result = dbip_df.loc[cidr]
-                                self._logger.debug(f"GeoliteDB geolocation for {ip}: {result}")
-                                results.append(result)
-                                geolocation_cache[ip] = result
-                                range_found = True
-                                break
-                        """
-
                         #CIDR result fetching
                         cidr_trie_find_result = cidr_trie.find_all(ip)
                         if cidr_trie_find_result:
@@ -137,22 +123,3 @@ class Analysis:
                                 self._logger.warning("Unable to geolocate '%s'. Trying again..." % ip)
 
                     self.results[source_url][browser][fqdn]["server_location"] = results
-
-
-if __name__ == "__main__":
-    LOGGER_FORMAT = "[TRACKER HACKER] %(levelname)-8s: %(message)s"
-    LOGGER_LEVEL = logging.DEBUG
-    logging.basicConfig(format=LOGGER_FORMAT)
-    logger = logging.getLogger("tracker_hacker")
-    logger.setLevel(LOGGER_LEVEL)
-
-    parsed_data_f = open('./tests/test_data/parsed_cnn_data.txt', 'r')
-    parsed_data = json.load(parsed_data_f)
-    parsed_data_f.close()
-    air_f = open('./tests/test_data/cnn_analysis_initial_results.json', 'r')
-    air = json.load(air_f)
-    air_f.close()
-    a = Analysis(logger, parsed_data, 'C:\\Users\\treba\\Documents\\GitHub\\TrackerHacker\\', initial_results=air)
-
-    a.do_server_location_analysis()
-    print(a.get_results())

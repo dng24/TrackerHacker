@@ -3,8 +3,9 @@ import os
 
 from logging import Logger
 
+
 #Method or identifying the ad tracker rules and which rules to run the analysis on
-def _get_ad_tracker_rules(logger: Logger, ad_tracker_lists_dir: str) -> list:
+def _get_ad_tracker_rules(logger: Logger, ad_tracker_lists_dir: str) -> list[str]:
     raw_rules = []
     try:
         for filename in os.listdir(ad_tracker_lists_dir):
@@ -31,8 +32,9 @@ def _get_ad_tracker_rules(logger: Logger, ad_tracker_lists_dir: str) -> list:
 
     return raw_rules
 
+
 #Method to extract the ads and tracker urls from the normal web traffic urls
-def extract_ads_and_trackers(logger, ad_tracker_lists_dir: str, collected_request_urls: dict) -> dict:
+def extract_ads_and_trackers(logger: Logger, ad_tracker_lists_dir: str, collected_request_urls: dict[str, dict[str, dict[str, dict[str, int]]]]) -> dict[str, dict[str, dict[str, dict[str, int]]]]:
     raw_rules = _get_ad_tracker_rules(logger, ad_tracker_lists_dir)
     if len(raw_rules) == 0:
         return {}

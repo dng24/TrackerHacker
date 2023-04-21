@@ -10,6 +10,8 @@ from enum import Enum
 from logging import Logger
 from typing import Any
 
+from whois import WhoisEntry
+
 from trackerhacker.userinput import DataChoices
 
 
@@ -19,7 +21,7 @@ class Entity(Enum):
 
 
 class Output:
-    def __init__(self, logger: Logger, tracker_hacker_root, analysis_results: dict, output_choices: list[DataChoices], output_dir: str) -> None:
+    def __init__(self, logger: Logger, tracker_hacker_root: str, analysis_results: dict[str, dict[str, dict[str, dict[str, list[str] | int | WhoisEntry | list[dict[str, str | None]]]]]], output_choices: list[DataChoices], output_dir: str) -> None:
         self._logger = logger
         self.analysis_results = analysis_results
         self.output_choices = output_choices
@@ -30,7 +32,7 @@ class Output:
             os.makedirs(output_dir)
             #TODO error checking
 
-    def _make_csv_mapping(self, csv_filename: str) -> dict:
+    def _make_csv_mapping(self, csv_filename: str) -> dict[str, str]:
         mapping = {}
         with open(csv_filename, "r", newline="") as f:
             reader = csv.reader(f)
@@ -39,7 +41,7 @@ class Output:
 
         return mapping
     
-    def _get_info_for_heatmap(self, entities: set, entity_type: Enum, fqdn: str, fqdn_info: dict, map_info: dict) -> dict:
+    def _get_info_for_heatmap(self, entities: set[str], entity_type: Entity, fqdn: str, fqdn_info: dict[str, list[str] | int | WhoisEntry | list[dict[str, str | None]]], map_info: dict) -> dict[str, dict[str, int | dict[str, int]]]:
         if len(entities) > 1:
             #TODO make message better
             self._logger.warning("'%s' has servers in multiple %s. Double counting for %d ad/trackers for %s" % (fqdn, entity_type.value[1], fqdn_info["ad_tracker_count"], entities))
@@ -56,7 +58,7 @@ class Output:
 
         return map_info
     
-    def _make_heatmap_figure(self, map_info: dict, location_mode: str):
+    def _make_heatmap_figure(self, map_info: dict[str, dict[str, int | dict[str, int]]], location_mode: str) -> go.Figure:
         locations = []
         ad_tracker_count = []
         ad_tracker_fqdns = []
@@ -98,7 +100,7 @@ class Output:
        
         map_country_info = {}
         map_state_info = {}
-        for _, source_url_info in self.analysis_results.items():
+        for source_url_info in self.analysis_results.values():
             for browser, browser_info in source_url_info.items():
                 if browser not in map_country_info.keys():
                     map_country_info[browser] = {}
@@ -107,9 +109,8 @@ class Output:
                     map_state_info[browser] = {}
 
                 for fqdn, fqdn_info in browser_info.items():
-                    countries = {server_location_dict["country_code"] for server_location_dict in fqdn_info["server_location"]}
-                    countries = set()
-                    states = set()
+                    countries: set[str] = set()
+                    states: set[str] = set()
                     for server_location_dict in fqdn_info["server_location"]:
                         try:
                             iso3_country_code = self.country_codes_iso2to3[server_location_dict["country_code"]]
@@ -275,7 +276,7 @@ class Output:
 
         return prettified_output
     
-    def _make_csv_row(self, source_url: str, browser: str, fqdn: str, fqdn_info: dict, ip: str, first_instance: bool) -> list[str]:
+    def _make_csv_row(self, source_url: str, browser: str, fqdn: str, fqdn_info: dict[str, list[str] | int | WhoisEntry | list[dict[str, str | None]]], ip: str, first_instance: bool) -> list[str]:
         row = []
         if first_instance:
             row = [source_url, browser, fqdn, fqdn_info["ad_tracker_count"], ip]

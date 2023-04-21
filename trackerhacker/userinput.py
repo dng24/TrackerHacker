@@ -6,9 +6,8 @@ import validators
 
 from argparse import RawTextHelpFormatter
 
-
 from trackerhacker.browsermanager import WebBrowsers
-from trackerhacker import TrackerObject
+from trackerhacker.TrackerObject import TrackerObject
 from trackerhacker.TrackerObject import DataChoices
 
 
@@ -21,27 +20,27 @@ DATA_CHOICES_MAPPING = {
 
 
 # Checks the adlist directory for files
-def check_adlists(adlists_dir):
+def check_adlists(adlists_dir: str) -> bool:
     dir = os.listdir(adlists_dir)
     if len(dir) == 0:
         print("There was a problem with referencing ad list files in '%s'. Please make sure the directory is not empty." % adlists_dir)
-        return None
+        return False
     else:
         x = len(dir)
         print(f"Num files: {x}")
-        return 1
+        return True
 
 
 # Help function
-def help():
+def help() -> None:
     print("\n\nWelcome to tracker hacker, a convenient tool to show what trackers are spying on you when you visit a webpage. Usage of the tool is easy!\n\nFirst, enter the types of data you want to find out about the adstrackers, then supply which browsers you want the program to run on. Following, supply either a list of manually entered urls (make sure to type them in the correct format: https://<valid url>.<valid url type>, or supply a list of urls in a txt file. You can then supply a custom list of ads/tracker to look for, or you can use the default lists. You can also choose to run the program headless, which means the selenium gui will not launch. Finally, you can specify the type of output and directory for the output.\n\n\nHelpful tips:\n - At any time, you can provide h, H, or help to the input field to bring up this help menu.\n - At any time, you can type q or quit to end the program\n - If you enter a value or entry wrong, no worries, the program will pick up on it and prompt you to re-enter it.\n")
 
 
 # Method to retrieve the user supplied information from the cli run 
-def get_userinput_cli(adlists_dir, default_output_dir):
-    datapoints = []
-    browsers = []
-    urls = []
+def get_userinput_cli(adlists_dir: str, default_output_dir: str) -> TrackerObject:
+    datapoints: list[DataChoices] = []
+    browsers: list[WebBrowsers] = []
+    urls: list[str] = []
     parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
     headless = False
 
@@ -153,16 +152,16 @@ def get_userinput_cli(adlists_dir, default_output_dir):
         headless = True
 
     # Checks the adlists
-    if check_adlists(adlists_dir) == None:
+    if not check_adlists(adlists_dir):
         return None
 
     # Constructs tracker object to pass to main
-    trackerQuery = TrackerObject.TrackerObject(datapoints, browsers, urls, headless, args.output_directory)
+    trackerQuery = TrackerObject(datapoints, browsers, urls, headless, args.output_directory)
     return trackerQuery
 
 
 # Determines user requested datapoints to query for the supplied urls
-def datapoints():
+def datapoints() -> list[DataChoices]:
     #Desired data points
     datapoints = []
     data_choices = []
@@ -228,7 +227,7 @@ def datapoints():
 
 
 # Determines which browsers to run the program through
-def browser_choice():
+def browser_choice() -> list[WebBrowsers]:
     #Browser Choice
     browser = []
     while True:
@@ -287,7 +286,7 @@ def browser_choice():
 
 
 # Determines what urls to run the program against
-def urls():
+def urls() -> list[str]:
     #Url input
     urls = []
     url_input_type = ""
@@ -408,7 +407,7 @@ def urls():
 
     
 # Determines if the program will run headless, or if it will launch the selenium visual browser
-def headless_run():
+def headless_run() -> bool:
     headless = False
     while True:
         try:
@@ -431,7 +430,7 @@ def headless_run():
 
 
 # Determines the ouptut directory where the output graphics and csv will be put
-def get_output_dir(default_output_dir):
+def get_output_dir(default_output_dir: str) -> str:
     output_dir = default_output_dir
     while True:
         try:
@@ -462,7 +461,7 @@ def get_output_dir(default_output_dir):
 
 
 # Runs all the UI components and prompts user
-def get_user_input_gui(adlists_dir: str, default_output_dir: str) -> TrackerObject.TrackerObject:
+def get_user_input_gui(adlists_dir: str, default_output_dir: str) -> TrackerObject:
     print("Welcome to Tracker Hacker!\n")
     print("To begin, follow the prompts to select your inputs (Type h/help for the manual, q/quit to quit).\n")
 
@@ -478,7 +477,7 @@ def get_user_input_gui(adlists_dir: str, default_output_dir: str) -> TrackerObje
     if u is None:
         return None
     
-    if check_adlists(adlists_dir) is None:
+    if not check_adlists(adlists_dir):
         return None
 
     headless = headless_run()
@@ -489,12 +488,5 @@ def get_user_input_gui(adlists_dir: str, default_output_dir: str) -> TrackerObje
     if output_dir is None:
         return None
 
-    trackerQuery = TrackerObject.TrackerObject(d, b, u, headless, output_dir)
+    trackerQuery = TrackerObject(d, b, u, headless, output_dir)
     return trackerQuery
-
-
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        get_userinput_cli()
-    else:
-        get_user_input_gui()

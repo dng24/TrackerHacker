@@ -13,11 +13,13 @@ from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.core.utils import ChromeType
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
+
 #Determines the default paths for reference for the webdrivers to reference when launching selenium
 DEFAULT_BRAVE_LINUX_PATH = "/usr/bin/brave-browser"
 DEFAULT_BRAVE_WIN_PATH = "C:/Program Files (x86)/BraveSoftware/Brave-Browser/Application/brave.exe"
 DEFAULT_BRAVE_WIN_64_PATH = "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"
 DEFAULT_BRAVE_MAC_PATH = "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
+
 
 #Web browser class for determining the included and runnable browsers
 class WebBrowsers(Enum):
@@ -25,6 +27,7 @@ class WebBrowsers(Enum):
     FIREFOX = "Firefox"
     EDGE = "Edge"
     BRAVE = "Brave"
+
 
 #Webdriver class for managing the selenium webdrivers
 class WebDrivers:

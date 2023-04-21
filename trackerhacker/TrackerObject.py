@@ -1,5 +1,7 @@
 from enum import Enum
 
+from trackerhacker.browsermanager import WebBrowsers
+
 
 OUTPUT_KEY = "output_name"
 ANALYSIS_KEY = "analysis_name"
@@ -34,7 +36,7 @@ class DataChoices(Enum):
 
 #Object that stores user choices when running the program
 class TrackerObject:
-    def __init__(self, datapoints, browsers, query_urls, headless, output_dir):
+    def __init__(self, datapoints: list[DataChoices], browsers: list[WebBrowsers], query_urls: list[str], headless: bool, output_dir: str) -> None:
         self.datapoints = datapoints
         self.browsers = browsers
         self.query_urls = query_urls

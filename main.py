@@ -3,6 +3,8 @@ try:
     import os
     import sys
 
+    from logging import LogRecord
+
     from trackerhacker import userinput
     from trackerhacker import datacollection
     from trackerhacker import adparsing
@@ -21,6 +23,7 @@ ABSOLUTE_TIMEOUT = 300
 TRACKER_HACKER_ROOT = os.path.dirname(sys.argv[0])
 AD_TRACKER_LISTS_DIR = os.path.join(TRACKER_HACKER_ROOT, "adlists")
 DEFAULT_OUTPUT_DIR = "out"
+
 
 #Formatting class for log coloring
 class ColorFormatter(logging.Formatter):
@@ -43,11 +46,12 @@ class ColorFormatter(logging.Formatter):
     }
 
     #Method to formaat the logs for standardized and visually appealing output/logs
-    def format(self, log: str) -> str:
+    def format(self, log: LogRecord) -> str:
         log_fmt = self.FORMATS.get(log.levelno)
         formatter = logging.Formatter(log_fmt)
         return formatter.format(log)
     
+
 #Main logic method of the tracker hacker program
 def main() -> int:
     logger = logging.getLogger("tracker_hacker")
