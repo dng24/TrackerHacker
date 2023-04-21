@@ -9,8 +9,10 @@ from unittest import TestCase
 from unittest import skip
 
 class TestDatapointsInput(TestCase):
+    # Test class for verifying that the selection of datapoints is properly returned by the datapoints function
     @mock.patch('userinput.input', create=True)
     def test_datapoints(self, mocked_input):
+        # Tests for one input and then for two inputs back to back
         browser_inputs = [
             ['a', 'n'],
             ['a', 'y', 'b', 'n']

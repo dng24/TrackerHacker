@@ -168,7 +168,7 @@ def datapoints() -> list[DataChoices]:
 
     # Collects and analyzes user input
     while True:
-        print("\nPlease select a data point you want Tracker Hacker to ouptut:\n")
+        print("\nPlease select a data point you want Tracker Hacker to output:\n")
         print("a)    Server location\n")
         print("b)    Server location coordinates\n")
         print("c)    Domain information\n")

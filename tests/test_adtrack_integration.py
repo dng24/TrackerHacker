@@ -11,6 +11,7 @@ import logging
 logger = logging.getLogger('tracker_hacker')
 
 class TestAdtrackIntegration(TestCase):
+    # Test class for verifying that the userinput and datacollection features work with each other
     @mock.patch('userinput.input', create=True)
     def test_default_list(self, mocked_input):
         url = 'http://www.google.com'

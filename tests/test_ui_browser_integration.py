@@ -10,6 +10,7 @@ import logging
 logger = logging.getLogger('tracker_hacker')
 
 class TestUIBrowserIntegration(TestCase):
+    # Test class for verifying that the UI selection of browsers works properly for each browser
     @mock.patch('userinput.input', create=True)
     def test_chrome_ui(self, mocked_input):
         url = 'http://www.duckduckgo.com'

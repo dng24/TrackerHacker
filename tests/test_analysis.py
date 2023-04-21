@@ -15,7 +15,9 @@ from unittest import skip
 logger = logging.getLogger('tracker_hacker')
 
 class TestAnalysis(TestCase):
+    # Test class for the analysis section of parsed ads/trackers
     def test_init(self):
+        # Tests that the Analysis class can actually load and read in the data
         test_data = self._read_test_data('ddg_test_data.txt')
         analysis_test = analysis.Analysis(logger, test_data)
         self.assertTrue(analysis_test.results)
@@ -23,6 +25,7 @@ class TestAnalysis(TestCase):
         self.assertTrue('Firefox' in analysis_test.results['http://www.duckduckgo.com'])
 
     def test_whois(self):
+        # Tests that the whois functionality works and outputs a whois result in the results dict
         test_data = self._read_test_data('ddg_test_data.txt')
         analysis_test = analysis.Analysis(logger, test_data)
         results = analysis_test.results
@@ -32,6 +35,7 @@ class TestAnalysis(TestCase):
         self.assertTrue(whois['whois_server'])
 
     def test_server_location(self):
+        # Tests that the server location analysis functionality works properly and outputs a result in the dict
         test_data = self._read_test_data('ddg_test_data.txt')
         analysis_test = analysis.Analysis(logger, test_data)
         results = analysis_test.results

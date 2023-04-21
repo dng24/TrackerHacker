@@ -9,20 +9,24 @@ from unittest import TestCase
 from unittest import skip
 
 class TestURLInput(TestCase):
+    # Test class for ensuring that various types of URL entries are handled correctly
     @mock.patch('userinput.input', create=True)
     def test_manual_entry_success(self, mocked_input):
+        # Test to ensure manually entered valid urls are stored
         mocked_input.side_effect = ['a', 'http://www.duckduckgo.com', 'n']
         result = userinput.urls()
         self.assertEquals(result, ['http://www.duckduckgo.com'])
 
     @mock.patch('userinput.input', create=True)
     def test_manual_correctly_formatted_unreachable(self, mocked_input):
+        # Tests that an unreachable, but correctly formatted, URL is stored properly
         mocked_input.side_effect = ['a', 'http://www.fghydsuiagbiucygsduagsdiucyagshjzgxchkvdsadfahkj.com', 'n']
         result = userinput.urls()
         self.assertEquals(result, ['http://www.fghydsuiagbiucygsduagsdiucyagshjzgxchkvdsadfahkj.com'])
 
     @mock.patch('userinput.input', create=True)
     def test_manual_junk(self, mocked_input):
+        # Tests that junk inputs are discarded
         junk_inputs = [
             ['a', 'htp:/www.duckduckgo.com', 'q'],
             ['a', 'fjdsk', 'q'],
@@ -40,7 +44,7 @@ class TestURLInput(TestCase):
     
     @mock.patch('userinput.input', create=True)
     def test_file_exists(self, mocked_input):
-        #TODO incorrectly formatted lines?
+        # Tests that files passed in with varying amounts of valid/malformed URLs are all handled properly
         fp_inputs = [
             (['b', 'url_files/test1.txt'], []),
             (['b', 'url_files/test2.txt'], ['http://www.duckduckgo.com']),
@@ -61,6 +65,7 @@ class TestURLInput(TestCase):
 
     @mock.patch('userinput.input', create=True)
     def test_file_not_exists(self, mocked_input):
+        # Tests that if the file doesn't exists, it outputs the correct message to the user
         fp_inputs = [
             ['b', 'url_files/test6.txt', 'q'],
             ['b', 'asdf', 'q'],
