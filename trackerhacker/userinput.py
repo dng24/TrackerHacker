@@ -1,7 +1,6 @@
 import argparse
 import os
 import pathlib
-import sys
 import validators
 
 from argparse import RawTextHelpFormatter
@@ -26,8 +25,6 @@ def check_adlists(adlists_dir: str) -> bool:
         print("There was a problem with referencing ad list files in '%s'. Please make sure the directory is not empty." % adlists_dir)
         return False
     else:
-        x = len(dir)
-        print(f"Num files: {x}")
         return True
 
 
